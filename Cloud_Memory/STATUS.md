@@ -20,4 +20,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T13 Done: perms inset, signed release APK 3.2 MB (R8, keystore ~/focuslock-keys, keystore.properties ignored), README. Left: add release SHA-1 to Firebase, on-device pass, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T13 remaining: user adds release SHA-1; install release on phone; device pass; GitHub Release (gh not installed).
+Task: T13 remaining. DONE: user added release SHA-1 + new google-services.json (verified 2 hashes). NOW: rebuild release, uninstall old, install on phone, device pass; then GitHub Release (gh not installed). Files: none edited (build only).
