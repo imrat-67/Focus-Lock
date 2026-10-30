@@ -30,6 +30,7 @@ class CoreService : Service() {
     private var appSync: AppListSync? = null
     private var heartbeat: kotlinx.coroutines.Job? = null
     private var scheduleJob: kotlinx.coroutines.Job? = null
+    private var watcherJob: kotlinx.coroutines.Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -57,6 +58,10 @@ class CoreService : Service() {
         val scheduler = ScheduleScheduler(this)
         scheduler.rearm()
         if (scheduleJob == null) scheduleJob = scope.launch { watchSchedules(scheduler) }
+        if (watcherJob == null) {
+            val watcher = com.imrat.focuslock.lock.ForegroundWatcher(this, com.imrat.focuslock.lock.SessionCache(this))
+            watcherJob = scope.launch { while (true) { delay(runCatching { watcher.step() }.getOrDefault(3_000L)) } }
+        }
         if (heartbeat == null) {
             heartbeat = scope.launch {
                 var tick = 0

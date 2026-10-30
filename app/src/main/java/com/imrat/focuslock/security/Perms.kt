@@ -19,7 +19,7 @@ import com.imrat.focuslock.R
 import com.imrat.focuslock.service.AdminReceiver
 import com.imrat.focuslock.service.LockAccessibilityService
 
-/** Items of the first-run checklist (UI-2). "Display over apps" is not needed: the lock is a full-screen Activity. */
+/** Items of the first-run checklist (UI-2). OVERLAY is needed only so the phone lets the lock screen open instantly from the background (D24). */
 enum class Perm(@StringRes val title: Int, @StringRes val why: Int) {
     ACCESSIBILITY(R.string.perm_accessibility, R.string.perm_accessibility_why),
     DEVICE_ADMIN(R.string.perm_admin, R.string.perm_admin_why),
@@ -28,6 +28,7 @@ enum class Perm(@StringRes val title: Int, @StringRes val why: Int) {
     BATTERY(R.string.perm_battery, R.string.perm_battery_why),
     USAGE_ACCESS(R.string.perm_usage, R.string.perm_usage_why),
     PHONE_STATE(R.string.perm_phone, R.string.perm_phone_why),
+    OVERLAY(R.string.perm_overlay, R.string.perm_overlay_why),
 }
 
 object Perms {
@@ -42,6 +43,7 @@ object Perms {
         Perm.BATTERY -> c.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(c.packageName)
         Perm.USAGE_ACCESS -> usageAccessGranted(c)
         Perm.PHONE_STATE -> c.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+        Perm.OVERLAY -> Settings.canDrawOverlays(c)
     }
 
     fun missing(c: Context): List<Perm> = Perm.entries.filterNot { isGranted(c, it) }
@@ -67,6 +69,7 @@ object Perms {
             Perm.BATTERY -> Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, pkg)
             Perm.USAGE_ACCESS -> Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, pkg)
             Perm.PHONE_STATE -> Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg)
+            Perm.OVERLAY -> Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkg)
         }
     }
 

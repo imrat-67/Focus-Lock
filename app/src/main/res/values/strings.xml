@@ -83,4 +83,6 @@
     <string name="sched_from">From</string>
     <string name="sched_to">To</string>
     <string name="sched_rules">Longest lock is 12 hours. If the end time is earlier than the start, it ends the next day.</string>
+    <string name="perm_overlay">Display over other apps</string>
+    <string name="perm_overlay_why">Lets the lock screen open instantly when you press Home or switch apps. Without it some phones delay the lock screen.</string>
 </resources>

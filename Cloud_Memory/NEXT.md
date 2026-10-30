@@ -1,9 +1,9 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Test T08 on the vivo (build already installed): (1) Home > Lock now > Full Lock > 5 min > Start. Expect lock screen, countdown, auto-unlock at 0. No password exit exists until T11, so you wait it out (emergency call button works). (2) Optional: Schedules > New schedule starting 2-3 min from now, Save; expect notice ~10 min before (or immediate start if inside window). (3) Optional: reboot phone during a lock; it must stay locked. Tell me what happened.
+- New build installed. Open Focus Lock > open the permissions list > grant "Display over other apps" (new). Make sure Usage access is granted too. Then re-test: Lock now (5 min, Full) and press Home / try opening apps: lock screen must come back within ~half a second every time. Tell me the result.
 
-## Do now: finish T08 step f
+## Do now: finish T08 step f (fix for "Home lets you browse then lock pops late" is installed, needs re-test)
 1. After user feedback: fix issues, then mark T08 DONE in STATUS (one line), commit feat(T08), push.
 2. Not yet verified: boot rebase, clock-change tamper, scheduled start, notice notification, Firestore upload of self session (check Firestore users/{uid}/sessions).
 3. Then T09 (link flow).
