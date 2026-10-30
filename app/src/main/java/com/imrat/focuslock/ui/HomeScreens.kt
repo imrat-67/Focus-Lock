@@ -192,30 +192,40 @@ fun AddDeviceScreen(myAdded: Boolean, onMine: () -> Unit, onRemote: () -> Unit, 
 }
 
 @Composable
-fun AddRemoteScreen(myUid: String, container: AppContainer, onSent: () -> Unit, onBack: () -> Unit) {
+fun AddRemoteScreen(myUid: String, container: AppContainer, store: DeviceStore, onSent: () -> Unit, onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     var target by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var error by remember { mutableStateOf(false) }
-    AppScreen(stringResource(R.string.h_remote_device), onBack) {
-        Spacer(Modifier.height(8.dp))
-        Subtle(stringResource(R.string.h_remote_body))
-        Spacer(Modifier.height(16.dp))
-        OutlinedTextField(
-            value = target, onValueChange = { target = it }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.links_target_label)) },
-        )
-        Spacer(Modifier.height(16.dp))
+    AppScreen(stringResource(R.string.h_remote_device), onBack, scroll = false) {
+        Column(Modifier.weight(1f).fillMaxWidth()) {
+            Spacer(Modifier.height(8.dp))
+            Subtle(stringResource(R.string.h_remote_body))
+            Spacer(Modifier.height(20.dp))
+            OutlinedTextField(
+                value = name, onValueChange = { name = it.take(30) }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.h_device_name_label)) }, placeholder = { Text(stringResource(R.string.h_name_hint)) },
+            )
+            Spacer(Modifier.height(12.dp))
+            OutlinedTextField(
+                value = target, onValueChange = { target = it }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.links_target_label)) },
+            )
+            if (error) Text(stringResource(R.string.links_error), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+        }
         PrimaryButton(stringResource(R.string.links_send), {
             val typed = target
+            val label = name.trim()
             scope.launch {
                 try {
                     // LINK-3: same outcome whether or not the account exists.
-                    container.links.request(myUid, container.users.findUid(typed))
+                    val uid = container.users.findUid(typed)
+                    container.links.request(myUid, uid)
+                    if (uid != null && uid != myUid) store.addRemote(label, uid) // the Observer's own name for this device (local only)
                     onSent()
                 } catch (e: Exception) { error = true }
             }
-        }, enabled = target.isNotBlank())
-        if (error) Text(stringResource(R.string.links_error), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+        }, Modifier.padding(top = 8.dp, bottom = 16.dp), enabled = target.isNotBlank() && name.isNotBlank())
     }
 }
 

@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 "addRemote" -> {
                                     BackHandler { route = "add" }
-                                    AddRemoteScreen(uid, container, { route = "home" }) { route = "add" }
+                                    AddRemoteScreen(uid, container, store, { route = "home" }) { route = "add" }
                                 }
                                 "this" -> {
                                     BackHandler { route = "home" }

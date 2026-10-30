@@ -34,8 +34,6 @@
     <string name="perm_battery_why">Keeps Focus Lock running in the background. On vivo phones also allow auto-start and background activity in the phone\'s battery settings.</string>
     <string name="perm_usage">Usage access</string>
     <string name="perm_usage_why">A backup way to see which app is in front.</string>
-    <string name="perm_phone">Phone state</string>
-    <string name="perm_phone_why">Lets calls come through a lock while you are on a call.</string>
     <string name="service_channel">Focus Lock running</string>
     <string name="service_notification">Focus Lock is active</string>
     <string name="lock_title">Phone locked</string>
@@ -93,16 +91,16 @@
     <string name="links_accept">Accept</string>
     <string name="links_decline">Decline</string>
     <string name="links_observer_is">Your Observer: %s</string>
-    <string name="links_request_removal">Ask to remove Observer</string>
+    <string name="links_request_removal">Request to unlink</string>
     <string name="links_removal_locked">Removal cannot be requested while a lock is active.</string>
     <string name="links_removal_waiting">Removal requested. It completes when your Observer accepts, or in %d days.</string>
     <string name="links_people">People I observe</string>
     <string name="links_people_empty">Nobody yet.</string>
     <string name="links_pending_out">Waiting for them to accept</string>
     <string name="links_cancel">Cancel request</string>
-    <string name="links_removal_from">%s asks to be released.</string>
+    <string name="links_removal_from">%s requested to unlink.</string>
     <string name="links_keep">Keep</string>
-    <string name="links_release">Release</string>
+    <string name="links_release">Unlink</string>
     <string name="links_add_remote">Add remote device</string>
     <string name="links_target_label">Their email or friend code</string>
     <string name="links_send">Send request</string>
@@ -122,10 +120,10 @@
     <string name="links_manage">Manage</string>
     <string name="alert_channel">Requests</string>
     <string name="alert_request_title">New Observer request</string>
-    <string name="alert_request_body">Someone wants to be your Observer. Open Focus Lock to answer.</string>
-    <string name="alert_removal_title">Release request</string>
-    <string name="alert_removal_body">Someone you observe asks to be released. Open Focus Lock to answer.</string>
-    <string name="links_release_locked">A lock is running on their phone. You can release them after it ends.</string>
+    <string name="alert_request_body">You have a new Observer request. Open Focus Lock to answer.</string>
+    <string name="alert_removal_title">Unlink request</string>
+    <string name="alert_removal_body">A device you observe requested to unlink. Open Focus Lock to review.</string>
+    <string name="links_release_locked">A lock is running on their phone. You can unlink after it ends.</string>
     <string name="lock_wrong">Wrong password. %d attempts left.</string>
     <string name="lock_cooldown">Too many wrong attempts. Try again in %1$d:%2$02d.</string>
     <string name="lock_no_password">This lock ends only when the timer runs out. Your Observer can unlock it earlier.</string>
@@ -145,7 +143,7 @@
     <string name="h_empty_body">Add this phone, or a phone you want to lock remotely.</string>
     <string name="h_waiting">Waiting for them to accept</string>
     <string name="h_accepted_name">Accepted. Tap to name this device</string>
-    <string name="h_release_asked">Asked to be released</string>
+    <string name="h_release_asked">Unlink requested</string>
     <string name="h_name_title">Name this device</string>
     <string name="h_name_hint">For example: Sam\'s phone</string>
     <string name="h_name_save">Save</string>
@@ -154,8 +152,8 @@
     <string name="h_remote_device">Remote device</string>
     <string name="h_remote_device_sub">Lock someone else\'s phone. They must accept your request first.</string>
     <string name="h_already_added">Already added</string>
-    <string name="h_remote_body">Enter their account email or friend code. When they accept, you can name the device and lock it from here.</string>
-    <string name="h_remote_sent">Request sent. It shows on Home; once they accept, you can name the device.</string>
+    <string name="h_remote_body">Enter their email or friend code and give the device a name. You can lock it from here once they accept.</string>
+    <string name="h_remote_sent">Request sent. It shows on Home under the name you gave.</string>
     <string name="h_profile">Profile</string>
     <string name="h_copy_code">Copy code</string>
     <string name="h_instant">Instant lock</string>
@@ -166,4 +164,8 @@
     <string name="lock_hours">Hours</string>
     <string name="lock_minutes">Minutes</string>
     <string name="lock_time_invalid">Pick at least 1 minute and at most 24 hours.</string>
+    <string name="h_device_name_label">Device name</string>
+    <string name="perms_group_core">Required</string>
+    <string name="perms_group_more">Recommended</string>
+    <string name="perms_progress">%1$d of %2$d allowed</string>
 </resources>

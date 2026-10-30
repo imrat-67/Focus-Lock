@@ -126,7 +126,7 @@ internal fun NameDialog(onSave: (String) -> Unit, onDismiss: () -> Unit) {
 @Composable
 internal fun RemoteRow(l: Link, entry: RemoteEntry?, now: Long, container: AppContainer, onOpen: (String, String) -> Unit, onName: (String) -> Unit) {
     val scope = rememberCoroutineScope()
-    val who = personName(l.userUid, container.users)
+    val who = entry?.name ?: personName(l.userUid, container.users)
     when {
         l.status == LinkStatus.PENDING -> DeviceCard(who, stringResource(R.string.h_waiting), Icons.Filled.Person, null, null) {
             Spacer(Modifier.height(12.dp))

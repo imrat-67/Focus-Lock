@@ -8,7 +8,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
@@ -27,7 +26,6 @@ enum class Perm(@StringRes val title: Int, @StringRes val why: Int) {
     EXACT_ALARMS(R.string.perm_alarms, R.string.perm_alarms_why),
     BATTERY(R.string.perm_battery, R.string.perm_battery_why),
     USAGE_ACCESS(R.string.perm_usage, R.string.perm_usage_why),
-    PHONE_STATE(R.string.perm_phone, R.string.perm_phone_why),
     OVERLAY(R.string.perm_overlay, R.string.perm_overlay_why),
 }
 
@@ -42,7 +40,6 @@ object Perms {
             c.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
         Perm.BATTERY -> c.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(c.packageName)
         Perm.USAGE_ACCESS -> usageAccessGranted(c)
-        Perm.PHONE_STATE -> c.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
         Perm.OVERLAY -> Settings.canDrawOverlays(c)
     }
 
@@ -51,7 +48,6 @@ object Perms {
     /** Runtime permission to ask in-app, or null when the item is opened through a Settings screen. */
     fun runtimePermission(p: Perm): String? = when (p) {
         Perm.NOTIFICATIONS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Manifest.permission.POST_NOTIFICATIONS else null
-        Perm.PHONE_STATE -> Manifest.permission.READ_PHONE_STATE
         else -> null
     }
 
@@ -68,7 +64,6 @@ object Perms {
             Perm.EXACT_ALARMS -> Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, pkg)
             Perm.BATTERY -> Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, pkg)
             Perm.USAGE_ACCESS -> Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS, pkg)
-            Perm.PHONE_STATE -> Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkg)
             Perm.OVERLAY -> Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, pkg)
         }
     }

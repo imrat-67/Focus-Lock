@@ -1,6 +1,19 @@
 package com.imrat.focuslock.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,22 +51,67 @@ import com.imrat.focuslock.data.FormatRepository
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
-/** Searchable multi-select list of apps (FMT-1). */
+/** Small in-memory cache so scrolling the app list does not reload icons. */
+private object IconCache {
+    val map = android.util.LruCache<String, androidx.compose.ui.graphics.ImageBitmap>(200)
+}
+
+private fun loadIcon(pm: android.content.pm.PackageManager, pkg: String): androidx.compose.ui.graphics.ImageBitmap? = try {
+    val d = pm.getApplicationIcon(pkg)
+    val size = 96
+    val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val c = android.graphics.Canvas(bmp)
+    d.setBounds(0, 0, size, size)
+    d.draw(c)
+    bmp.asImageBitmap()
+} catch (e: Exception) { null } // not installed on this phone (e.g. the other phone's list)
+
+/** The app's own icon when it is installed here; otherwise a coloured initial so every row still lines up. */
+@Composable
+fun AppIcon(pkg: String, name: String, size: Int = 40) {
+    val ctx = LocalContext.current
+    val icon by produceState(IconCache.map.get(pkg), pkg) {
+        if (value == null) {
+            val loaded = withContext(Dispatchers.IO) { loadIcon(ctx.packageManager, pkg) }
+            if (loaded != null) IconCache.map.put(pkg, loaded)
+            value = loaded
+        }
+    }
+    val shape = RoundedCornerShape((size * 0.25f).dp)
+    val img = icon
+    if (img != null) {
+        Image(img, null, Modifier.size(size.dp).clip(shape))
+    } else {
+        Box(Modifier.size(size.dp).clip(shape).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+            Text(
+                name.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "?",
+                style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+}
+
+/** Searchable multi-select list of apps with icons (FMT-1). */
 @Composable
 fun AppPicker(apps: List<AppEntry>, selected: Set<String>, onToggle: (String) -> Unit, modifier: Modifier = Modifier) {
     var query by remember { mutableStateOf("") }
     val shown = remember(apps, query) { apps.filter { it.name.contains(query, true) || it.pkg.contains(query, true) } }
     Column(modifier) {
         OutlinedTextField(
-            value = query, onValueChange = { query = it }, singleLine = true,
+            value = query, onValueChange = { query = it }, singleLine = true, shape = MaterialTheme.shapes.medium,
             label = { Text(stringResource(R.string.format_search)) }, modifier = Modifier.fillMaxWidth(),
         )
-        Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(vertical = 4.dp))
+        Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
         LazyColumn(Modifier.weight(1f)) {
             items(shown, key = { it.pkg }) { a ->
-                Row(Modifier.fillMaxWidth().clickable { onToggle(a.pkg) }, verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).clickable { onToggle(a.pkg) }.padding(horizontal = 4.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    AppIcon(a.pkg, a.name)
+                    Spacer(Modifier.width(14.dp))
+                    Text(a.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                     Checkbox(checked = a.pkg in selected, onCheckedChange = { onToggle(a.pkg) })
-                    Text(a.name)
                 }
             }
         }
