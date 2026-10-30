@@ -10,6 +10,9 @@ import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import com.imrat.focuslock.lock.SessionEngine
 import com.imrat.focuslock.security.KeystoreBox
 import com.imrat.focuslock.security.SessionStore
 import java.io.File
@@ -25,6 +28,7 @@ import com.imrat.focuslock.R
 class CoreService : Service() {
     private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
     private var appSync: AppListSync? = null
+    private var heartbeat: kotlinx.coroutines.Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -47,6 +51,21 @@ class CoreService : Service() {
         val store = SessionStore(file, KeystoreBox.create())
         if (!file.exists()) store.save(emptyList())
         Log.i("CoreService", "restored ${store.load().size} session(s)")
+        val engine = SessionEngine(this)
+        engine.rearmAlarms()
+        if (heartbeat == null) {
+            heartbeat = scope.launch {
+                var tick = 0
+                while (true) {
+                    runCatching {
+                        engine.heartbeat()
+                        if (tick % 20 == 0) engine.syncClock() // ~every 10 min, and at start
+                    }
+                    tick++
+                    delay(30_000)
+                }
+            }
+        }
     }
 
     private fun buildNotification(): Notification {

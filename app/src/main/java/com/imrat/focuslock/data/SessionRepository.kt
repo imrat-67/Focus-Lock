@@ -15,6 +15,13 @@ class SessionRepository(private val db: FirebaseFirestore) {
         return ref.id
     }
 
+    fun newId(userUid: String): String = col(userUid).document().id
+
+    /** Same as [create] but with an id chosen earlier, so the phone can enforce locally first (offline-safe). */
+    suspend fun createWithId(userUid: String, id: String, session: LockSession) {
+        col(userUid).document(id).set(session.toCreateMap()).await()
+    }
+
     /** Observer remote-unlock / cancel (UNL-1, SCH-4). The rules force `endedBy` to the caller. */
     suspend fun endByObserver(userUid: String, sessionId: String, observerUid: String) {
         col(userUid).document(sessionId).update(mapOf("status" to SessionStatus.ENDED.wire, "endedBy" to observerUid)).await()
