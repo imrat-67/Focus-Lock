@@ -1,0 +1,23 @@
+# Build
+build/
+.gradle/
+*.apk
+*.aab
+.idea/
+*.iml
+local.properties
+captures/
+.cxx/
+# Secrets
+google-services.json
+*.jks
+*.keystore
+keystore.properties
+.env
+# Firebase local
+.firebase/
+*-debug.log
+firebase-debug.log
+node_modules/
+# OS
+.DS_Store
