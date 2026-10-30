@@ -19,4 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none (T06 not started)
+Task: T06
+Plan/steps: [ ] a) LockPolicy (pure) + unit tests · [ ] b) LockActivity (Compose: countdown, who, mode, password field UI-only, Emergency-call button) + strings · [ ] c) LockAccessibilityService enforcement (reads SessionStore, call/alarm/exemptions via CallGuard) · [ ] d) debug-only receiver to inject a test session (adb) · [ ] e) build, install, verify Full Lock on vivo
+Files touched: app/src/main/** (service/, lock/, security/), AndroidManifest.xml, res/values/strings.xml, app/src/debug/**
+Last commit: see git log
