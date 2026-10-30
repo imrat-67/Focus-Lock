@@ -29,6 +29,13 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".lock.LockActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity="" />
+
         <service
             android:name=".service.LockAccessibilityService"
             android:exported="true"

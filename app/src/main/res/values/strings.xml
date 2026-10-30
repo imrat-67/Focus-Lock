@@ -37,4 +37,15 @@
     <string name="perm_phone_why">Lets calls come through a lock while you are on a call.</string>
     <string name="service_channel">Focus Lock running</string>
     <string name="service_notification">Focus Lock is active</string>
+    <string name="lock_title">Phone locked</string>
+    <string name="lock_mode_full">Full Lock</string>
+    <string name="lock_mode_apps">Apps Lock</string>
+    <string name="lock_by_you">Locked by you</string>
+    <string name="lock_by_observer">Locked by your Observer</string>
+    <string name="lock_remaining">Time left</string>
+    <string name="lock_password_hint">Emergency password</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_password_pending">Password unlock is not available yet.</string>
+    <string name="lock_call_112">Emergency call 112</string>
+    <string name="lock_call_999">Emergency call 999</string>
 </resources>
