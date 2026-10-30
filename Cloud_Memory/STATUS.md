@@ -20,7 +20,13 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T11 (not started)
-Plan/steps: [ ] a) read SRS UNL-2..7, ARCHITECTURE password section, existing pwHash/pwSalt in SessionPlan/LockActivity
+Task: T11a = password for remote instant locks + unlock on lock screen + self-lock emergency exit; T11b = schedule pwPool (UNL-6)
+Plan T11a:
+[ ] 1 pure PasswordCrypto (6 digits, salt, PBKDF2 100k, const-time verify) + UnlockPolicy (5 wrong->10 min cooldown, boot keeps cooldown) + tests
+[ ] 2 LocalSession.exitAtElapsedMs + codec; SessionStore tests still pass
+[ ] 3 lock screen: verify password, success ends session (+markPasswordUsed, doneIds so it never restarts); cooldown msg; self-lock Emergency exit 5-min countdown
+[ ] 4 Observer: PasswordVault (encrypted local), generate on remote lock, show/copy + Regenerate (UNL-5); RemoteSync handles hash updates + passwordUsed
+[ ] 5 build, tests, install, device self-check with debug lock
+Plan T11b: Schedule.pwPool field+codec, Observer top-up 14 occurrences, startScheduled uses pool
 Files touched: none yet
 Last commit: see git log
