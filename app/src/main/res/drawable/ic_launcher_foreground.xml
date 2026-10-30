@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- grey ring -->
+    <path android:strokeColor="#334155" android:strokeWidth="5" android:pathData="M54,26 A28,28 0 1 1 54,82 A28,28 0 1 1 54,26" />
+    <!-- teal progress arc -->
+    <path android:strokeColor="#2DD4BF" android:strokeWidth="5" android:strokeLineCap="round" android:pathData="M54,26 A28,28 0 1 1 26,54" />
+    <!-- padlock shackle -->
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="3.6" android:strokeLineCap="round" android:pathData="M46.8,52.8 L46.8,49.2 A7.2,7.2 0 0 1 61.2,49.2 L61.2,52.8" />
+    <!-- padlock body -->
+    <path android:fillColor="#FFFFFF" android:pathData="M49.2,52.8 L58.8,52.8 A6,6 0 0 1 64.8,58.8 L64.8,63.6 A6,6 0 0 1 58.8,69.6 L49.2,69.6 A6,6 0 0 1 43.2,63.6 L43.2,58.8 A6,6 0 0 1 49.2,52.8 Z" />
+    <!-- keyhole -->
+    <path android:fillColor="#0F172A" android:pathData="M54,57 m-2.4,0 a2.4,2.4 0 1 0 4.8,0 a2.4,2.4 0 1 0 -4.8,0" />
+    <path android:fillColor="#0F172A" android:pathData="M52.8,58.2 L55.2,58.2 L55.2,64.2 L52.8,64.2 Z" />
+</vector>

@@ -52,6 +52,7 @@ fun LockNowScreen(
     val saved by remember(uid) { formats.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     val total = hours * 60 + minutes
     val validTime = total in MIN_LOCK_MINUTES..MAX_LOCK_MINUTES
+    val wheelRows = if (mode == LockMode.APPS) 3 else 5 // shorter wheel leaves room for the app list
     AppScreen(stringResource(R.string.h_instant), onBack, scroll = false) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(mode == LockMode.FULL, { mode = LockMode.FULL }, { Text(stringResource(R.string.mode_full)) })
@@ -61,11 +62,11 @@ fun LockNowScreen(
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Subtle(stringResource(R.string.lock_hours))
-                WheelPicker(0..(MAX_LOCK_MINUTES / 60), hours, { hours = it }, Modifier.fillMaxWidth())
+                WheelPicker(0..(MAX_LOCK_MINUTES / 60), hours, { hours = it }, Modifier.fillMaxWidth(), rows = wheelRows)
             }
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 Subtle(stringResource(R.string.lock_minutes))
-                WheelPicker(0..59, minutes, { minutes = it }, Modifier.fillMaxWidth(), format = { "%02d".format(it) })
+                WheelPicker(0..59, minutes, { minutes = it }, Modifier.fillMaxWidth(), format = { "%02d".format(it) }, rows = wheelRows)
             }
         }
         if (!validTime) Text(stringResource(R.string.lock_time_invalid), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
@@ -75,15 +76,14 @@ fun LockNowScreen(
                     saved.forEach { f -> FilterChip(false, { selected = f.packages.toSet() }, { Text(f.name) }) }
                 }
             }
-            Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelLarge)
             AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.weight(1f))
         } else {
             Spacer(Modifier.weight(1f))
             Subtle(stringResource(R.string.locknow_full_hint))
             Spacer(Modifier.weight(1f))
         }
-        Text(stringResource(R.string.locknow_warning), style = MaterialTheme.typography.bodySmall)
-        Spacer(Modifier.height(8.dp))
+        Subtle(stringResource(R.string.locknow_warning), Modifier.padding(top = 10.dp))
+        Spacer(Modifier.height(10.dp))
         PrimaryButton(
             stringResource(R.string.locknow_start), { onStart(mode, selected.toList(), total * 60_000L) },
             Modifier.padding(bottom = 16.dp), enabled = validTime && (mode == LockMode.FULL || selected.isNotEmpty()),

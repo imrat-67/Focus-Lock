@@ -138,19 +138,20 @@ fun IconBadge(icon: ImageVector, tint: Color = MaterialTheme.colorScheme.primary
 
 /** Vertical snapping wheel (like the Android clock). Reports the centred value. */
 @Composable
-fun WheelPicker(range: IntRange, value: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifier, format: (Int) -> String = { it.toString() }) {
+fun WheelPicker(range: IntRange, value: Int, onChange: (Int) -> Unit, modifier: Modifier = Modifier, format: (Int) -> String = { it.toString() }, rows: Int = 5) {
     val itemH = 52.dp
+    val pad = rows / 2 // empty rows above/below so the first/last value can reach the centre
     val count = range.last - range.first + 1
     val state = rememberLazyListState(initialFirstVisibleItemIndex = (value - range.first).coerceIn(0, count - 1))
     val density = androidx.compose.ui.platform.LocalDensity.current
     val itemPx = with(density) { itemH.toPx() }
     val selected by remember { derivedStateOf { Math.round((state.firstVisibleItemIndex * itemPx + state.firstVisibleItemScrollOffset) / itemPx).coerceIn(0, count - 1) } }
     LaunchedEffect(Unit) { snapshotFlow { selected }.distinctUntilChanged().collect { onChange(range.first + it) } }
-    Box(modifier.height(itemH * 5), contentAlignment = Alignment.Center) {
+    Box(modifier.height(itemH * rows), contentAlignment = Alignment.Center) {
         Box(Modifier.fillMaxWidth().height(itemH).background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(14.dp)))
         LazyColumn(state = state, flingBehavior = rememberSnapFlingBehavior(state), modifier = Modifier.fillMaxWidth()) {
-            items(count + 4) { i ->
-                val v = i - 2 // two empty rows on each side so the first/last value can reach the centre
+            items(count + 2 * pad) { i ->
+                val v = i - pad
                 val dist = Math.abs(v - selected)
                 Box(Modifier.fillMaxWidth().height(itemH), contentAlignment = Alignment.Center) {
                     if (v in 0 until count) {
