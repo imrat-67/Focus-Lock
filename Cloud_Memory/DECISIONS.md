@@ -4,7 +4,7 @@ D01 · Sideloaded APK via GitHub Releases, not Play Store · free; Play restrict
 D02 · Remote lock via Firestore snapshot listeners in a foreground service, no FCM sender/Cloud Functions · FCM send needs a secret key or Blaze billing
 D03 · Lock UI = full-screen LockActivity launched by Accessibility service, not a plain overlay · overlays unreliable on Android 12+
 D04 · Password: generated on Observer phone, only salted PBKDF2 hash on User phone, 5 tries → 10 min cooldown · Observer-only secrecy; slows brute force
-D05 · Self-lock has no password; Emergency exit = 5-min countdown · prevents being trapped when no Observer
+D05 · Self-lock has no password (SUPERSEDED by D26: no emergency exit; timer only)
 D06 · Max session 12 h (superseded by D25: 24 h) · limits Observer abuse / mistakes
 D07 · `links/{userUid}` doc id = User uid · enforces one Observer per User in data model
 D08 · Recurring schedules: Observer phone pre-generates 14 occurrence password hashes · password per session without Observer being online at start
@@ -23,8 +23,9 @@ D20 · Rules: link doc id = userUid (one Observer per User); Observer creates `p
 D21 · deviceId = ANDROID_ID, immutable in rules; LINK-3 enforced by swallowing PERMISSION_DENIED in LinkRepository.request (generic 'request sent' UI). Debug APK 19 MB.
 D22 · Test device: vivo Y29 (V2434), OriginOS 6 / Android 16, Snapdragon 685, 8 GB RAM, 6500 mAh. Wireless debugging chosen. OriginOS kills background apps aggressively: T05/T12 must guide the user to allow autostart, unrestricted battery and lock-in-recents for Focus Lock, and verify on this phone.
 D23 · Emulator allowed for dev testing (AVD fl35, Android 35 default x86_64, -memory 1536; RAM is tight, kill with `adb -s emulator-5554 emu kill` when done; use ANDROID_SERIAL=emulator-5554 for gradle). Final pass on real vivo phone in T13. vivo clears adb-set accessibility setting within seconds, emulator doesn't.
-D24 · Alarm exemption is a heuristic: clock-app packages + class name containing "alert"/"ring". Emergency buttons try ACTION_CALL, fall back to ACTION_DIAL; 30 s dialer grace after tap. Debug-only DebugSessionReceiver (src/debug) injects test sessions via adb.
+D24 · Alarm exemption is a heuristic: clock-app packages + class name containing "alert"/"ring". (Emergency call buttons removed in D26.) Debug-only DebugSessionReceiver (src/debug) injects test sessions via adb.
 
 D24 · Overlay permission (SYSTEM_ALERT_WINDOW) added to checklist: only to exempt the lock Activity from background-start limits (vivo showed delayed lock screen after Home). No overlay windows are drawn. Backup ForegroundWatcher polls UsageStats every 500 ms during an active lock (screen on) in case accessibility events are late.
 ## D25 (T14) Max lock 24 h
 User chose a 24 h cap (was 12 h). Changed TimeModel.MAX_SESSION_MS, firestore.rules LOCK-5 check, SRS LOCK-5. Rules must be redeployed.
+D26 · T14 lock-screen rules (user): no Emergency-unlock button, no emergency-call buttons, no exit countdown; self-lock ends only by timer (max 24 h) or Observer password/direct unlock. Home/Recents re-cover immediately (onUserLeaveHint + onPause + onStop) ONLY during a FULL lock; Apps lock leaves Home free (LockPolicy.shouldRecoverOnLeave) · user asked; phone's own system lock-screen already has an emergency dialer. Removed UnlockPolicy exit fns, SessionEngine.startExit/processExits, LocalSession.exitAtElapsedMs, LockState.dialerGrace.

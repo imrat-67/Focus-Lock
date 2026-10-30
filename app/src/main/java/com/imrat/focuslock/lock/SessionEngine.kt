@@ -106,21 +106,6 @@ class SessionEngine(ctx: Context) {
         return r.outcome
     }
 
-    /** UNL-7: begin the 5-minute emergency-exit countdown of a self-lock. */
-    @Synchronized
-    fun startExit(id: String) = store.update(id) { UnlockPolicy.startExit(it, SystemClock.elapsedRealtime()) }
-
-    /** UNL-7: end self-locks whose emergency-exit countdown finished. */
-    @Synchronized
-    fun processExits() {
-        val el = SystemClock.elapsedRealtime()
-        store.load().filter { UnlockPolicy.exitDue(it, el) }.forEach {
-            store.remove(it.id)
-            markDone(it.id)
-            markEnded(it)
-        }
-    }
-
     fun local(): List<LocalSession> = store.load()
 
     fun localIds(): Set<String> = store.load().map { it.id }.toSet() + doneIds()
@@ -170,7 +155,6 @@ class SessionEngine(ctx: Context) {
     @Synchronized
     fun heartbeat() {
         val el = SystemClock.elapsedRealtime()
-        processExits()
         val all = store.load()
         if (all.isEmpty()) return
         val expired = all.filter { it.endElapsedMs <= el }

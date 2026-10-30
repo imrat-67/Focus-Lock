@@ -36,6 +36,13 @@ class LockPolicyTest {
         val l = listOf(s(LockMode.APPS, 500, listOf("com.insta")))
         assertTrue(block("com.insta", l)); assertFalse(block("com.settings", l))
     }
+    @Test fun homeRecoveredOnlyDuringFullLock() {
+        assertTrue(LockPolicy.shouldRecoverOnLeave(listOf(s(LockMode.FULL, 500)), 100))
+        assertFalse(LockPolicy.shouldRecoverOnLeave(listOf(s(LockMode.APPS, 500, listOf("com.x"))), 100))
+        assertTrue(LockPolicy.shouldRecoverOnLeave(listOf(s(LockMode.APPS, 500, listOf("com.x")), s(LockMode.FULL, 500)), 100))
+        assertFalse(LockPolicy.shouldRecoverOnLeave(listOf(s(LockMode.FULL, 100)), 100))
+        assertFalse(LockPolicy.shouldRecoverOnLeave(emptyList(), 100))
+    }
     @Test fun displayedIsLatestEnding() =
         assertEquals(900L, LockPolicy.displayed(listOf(s(LockMode.FULL, 500), s(LockMode.FULL, 900)), 100)?.endElapsedMs)
 

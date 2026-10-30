@@ -2,7 +2,7 @@ package com.imrat.focuslock.lock
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
+import android.os.PowerManager
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.activity.ComponentActivity
@@ -10,7 +10,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,13 +39,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.imrat.focuslock.R
 import com.imrat.focuslock.data.LockMode
 import com.imrat.focuslock.security.LocalSession
+import com.imrat.focuslock.ui.FocusLockTheme
+import com.imrat.focuslock.ui.PrimaryButton
+import com.imrat.focuslock.ui.Subtle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** The lock screen (LOCK-4): countdown, who locked, mode, password field, emergency call. Nothing else. */
+/** The lock screen (LOCK-4): countdown, who locked, mode, password field. Nothing else (no exit, no call buttons). */
 class LockActivity : ComponentActivity() {
     private lateinit var cache: SessionCache
     private lateinit var engine: SessionEngine
@@ -60,13 +61,12 @@ class LockActivity : ComponentActivity() {
             override fun handleOnBackPressed() = Unit
         })
         setContent {
-            MaterialTheme {
+            FocusLockTheme {
                 var session by remember { mutableStateOf<LocalSession?>(null) }
                 var remaining by remember { mutableLongStateOf(0L) }
                 var nowEl by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
                 LaunchedEffect(Unit) {
                     while (true) {
-                        withContext(Dispatchers.Default) { engine.processExits() }
                         val now = SystemClock.elapsedRealtime()
                         nowEl = now
                         val s = LockPolicy.displayed(cache.get(), now)
@@ -78,34 +78,39 @@ class LockActivity : ComponentActivity() {
                 }
                 session?.let {
                     LockScreen(
-                        it, remaining, nowEl, ::emergencyCall,
+                        it, remaining, nowEl,
                         onUnlock = { pw, done ->
                             lifecycleScope.launch { done(withContext(Dispatchers.Default) { engine.attemptUnlock(it.id, pw) }) }
                         },
-                        onExit = { lifecycleScope.launch(Dispatchers.Default) { engine.startExit(it.id) } },
                     )
                 }
             }
         }
     }
 
-    /** Pressing Home/Recents stops this screen: bring it straight back while a lock is active (unless a call is in progress). */
-    override fun onStop() {
-        super.onStop()
-        val now = SystemClock.elapsedRealtime()
-        if (LockPolicy.displayed(cache.get(), now) != null && !CallGuard.isCallActive(this) && !isChangingConfigurations) {
-            LockEnforcer.cover(this)
-        }
+    /** Fires the instant Home/Recents is pressed (before the launcher is even drawn): during a FULL lock bring the lock screen back at once. */
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        recoverIfFullLock()
     }
 
-    private fun emergencyCall(number: String) {
-        LockState.dialerGraceUntilElapsedMs = SystemClock.elapsedRealtime() + 30_000
-        val uri = Uri.parse("tel:$number")
-        try {
-            startActivity(Intent(Intent.ACTION_CALL, uri))
-        } catch (_: SecurityException) {
-            startActivity(Intent(Intent.ACTION_DIAL, uri))
-        }
+    /** Backup for paths that skip onUserLeaveHint (gesture to Recents on some skins, task switch). */
+    override fun onPause() {
+        super.onPause()
+        recoverIfFullLock()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        recoverIfFullLock()
+    }
+
+    /** FULL lock only; an Apps lock lets the user go Home (LOCK-3). Never while a call is active or the screen is off. */
+    private fun recoverIfFullLock() {
+        if (isChangingConfigurations || isFinishing) return
+        if (getSystemService(PowerManager::class.java)?.isInteractive == false) return
+        val now = SystemClock.elapsedRealtime()
+        if (LockPolicy.shouldRecoverOnLeave(cache.get(), now) && !CallGuard.isCallActive(this)) LockEnforcer.cover(this)
     }
 
     companion object {
@@ -116,13 +121,12 @@ class LockActivity : ComponentActivity() {
 
 @Composable
 private fun LockScreen(
-    s: LocalSession, remainingMs: Long, nowEl: Long, onCall: (String) -> Unit,
-    onUnlock: (String, (UnlockPolicy.Outcome) -> Unit) -> Unit, onExit: () -> Unit,
+    s: LocalSession, remainingMs: Long, nowEl: Long,
+    onUnlock: (String, (UnlockPolicy.Outcome) -> Unit) -> Unit,
 ) {
     var pw by remember { mutableStateOf("") }
     var outcome by remember { mutableStateOf<UnlockPolicy.Outcome?>(null) }
     var busy by remember { mutableStateOf(false) }
-    val myUid = FirebaseAuth.getInstance().currentUser?.uid
     val mine = FirebaseAuth.getInstance().currentUser?.uid == s.createdBy
     val total = (remainingMs.coerceAtLeast(0) + 999) / 1000
     Column(
@@ -161,20 +165,6 @@ private fun LockScreen(
             is UnlockPolicy.Outcome.Wrong -> Text(stringResource(R.string.lock_wrong, o.attemptsLeft), textAlign = TextAlign.Center, color = err)
             UnlockPolicy.Outcome.NoPassword -> Text(stringResource(R.string.lock_no_password), textAlign = TextAlign.Center, color = err)
             else -> Unit
-        }
-        if (UnlockPolicy.canEmergencyExit(s, myUid)) {
-            Spacer(Modifier.height(8.dp))
-            val exitLeft = ((s.exitAtElapsedMs - nowEl).coerceAtLeast(0) + 999) / 1000
-            if (s.exitAtElapsedMs > nowEl) {
-                Text(stringResource(R.string.lock_exit_counting, exitLeft / 60, exitLeft % 60), textAlign = TextAlign.Center)
-            } else {
-                OutlinedButton(onClick = onExit) { Text(stringResource(R.string.lock_exit)) }
-            }
-        }
-        Spacer(Modifier.height(24.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { onCall("112") }) { Text(stringResource(R.string.lock_call_112)) }
-            OutlinedButton(onClick = { onCall("999") }) { Text(stringResource(R.string.lock_call_999)) }
         }
     }
 }

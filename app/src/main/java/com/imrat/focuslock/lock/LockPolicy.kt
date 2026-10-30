@@ -38,6 +38,13 @@ object LockPolicy {
         return "alert" in c || "ring" in c
     }
 
+    /**
+     * Home/Recents handling: during a FULL lock the lock screen must come back at once; during an Apps lock the user
+     * may leave it (only the blocked apps are covered, by shouldBlock). User-requested in T14.
+     */
+    fun shouldRecoverOnLeave(sessions: List<LocalSession>, nowElapsedMs: Long): Boolean =
+        activeSessions(sessions, nowElapsedMs).any { it.mode == LockMode.FULL }
+
     /** Session shown on the lock screen: the one ending last. */
     fun displayed(sessions: List<LocalSession>, nowElapsedMs: Long): LocalSession? =
         activeSessions(sessions, nowElapsedMs).maxByOrNull { it.endElapsedMs }

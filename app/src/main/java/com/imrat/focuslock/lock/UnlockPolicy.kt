@@ -3,11 +3,10 @@ package com.imrat.focuslock.lock
 import com.imrat.focuslock.security.LocalSession
 import com.imrat.focuslock.security.PasswordCrypto
 
-/** Pure unlock rules: password attempts with cooldown (UNL-3, UNL-4) and the self-lock emergency exit (UNL-7). */
+/** Pure unlock rules: password attempts with cooldown (UNL-3, UNL-4). */
 object UnlockPolicy {
     const val MAX_ATTEMPTS = 5
     const val COOLDOWN_MS = 10 * 60_000L
-    const val EXIT_COUNTDOWN_MS = 5 * 60_000L
 
     sealed interface Outcome {
         data object Success : Outcome
@@ -32,17 +31,8 @@ object UnlockPolicy {
         }
     }
 
-    /** UNL-7: only the owner's own password-less lock has an emergency exit. */
-    fun canEmergencyExit(s: LocalSession, myUid: String?): Boolean = s.pwHash == null && myUid != null && s.createdBy == myUid
-
-    fun startExit(s: LocalSession, nowElapsedMs: Long): LocalSession =
-        if (s.exitAtElapsedMs > nowElapsedMs) s else s.copy(exitAtElapsedMs = nowElapsedMs + EXIT_COUNTDOWN_MS)
-
-    fun exitDue(s: LocalSession, nowElapsedMs: Long): Boolean = s.exitAtElapsedMs > 0 && s.exitAtElapsedMs <= nowElapsedMs
-
     /** After a reboot the monotonic clock restarted: keep punishments, never shorten them. */
     fun afterBoot(s: LocalSession, nowElapsedMs: Long): LocalSession = s.copy(
         cooldownUntilElapsedMs = if (s.cooldownUntilElapsedMs > 0) nowElapsedMs + COOLDOWN_MS else 0L,
-        exitAtElapsedMs = if (s.exitAtElapsedMs > 0) nowElapsedMs + EXIT_COUNTDOWN_MS else 0L,
     )
 }

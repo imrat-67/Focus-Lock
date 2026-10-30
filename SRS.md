@@ -31,9 +31,9 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 
 ### LOCK
 - LOCK-1 Two modes: **Full Lock** and **Apps Lock**; two timings: **Instant** and **Scheduled**.
-- LOCK-2 Full Lock: whenever the screen is unlocked, the Focus Lock lock screen covers everything. Allowed through: the lock screen itself, an incoming/ongoing call UI (dialer is allowed only while a call is active, so outgoing dialing stays blocked), a ringing alarm, and the lock screen's own Emergency-call button (dials 999/112). The system lock-screen emergency dialer is unaffected.
-- LOCK-3 Apps Lock: opening any blocked app shows the lock screen instead. Settings and all other apps work unless included.
-- LOCK-4 Lock screen shows: live countdown, who locked, mode, password field, Emergency-call button. Nothing else.
+- LOCK-2 Full Lock: whenever the screen is unlocked, the Focus Lock lock screen covers everything. Allowed through: the lock screen itself, an incoming/ongoing call UI (dialer is allowed only while a call is active, so outgoing dialing stays blocked), a ringing alarm. Home and Recents cannot be used to escape: the lock screen returns immediately. (The phone's own system lock-screen emergency dialer is unaffected.)
+- LOCK-3 Apps Lock: opening any blocked app shows the lock screen instead. Settings and all other apps work unless included. Home and Recents work normally in this mode (T14).
+- LOCK-4 Lock screen shows: live countdown, who locked, mode, password field. Nothing else: no Emergency-unlock button and no call buttons (removed in T14).
 - LOCK-5 Maximum single session length: 24 hours (changed from 12 in T14).
 - LOCK-6 Enforcement is local and works fully offline once a session is known to the phone.
 - LOCK-7 Active sessions survive reboot and app/process death (restored from encrypted local cache at boot).
@@ -58,7 +58,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - UNL-4 5 wrong attempts → 10-minute cooldown, persisted locally. No history/report is kept.
 - UNL-5 Observer can regenerate the password for a live session.
 - UNL-6 Repeating schedules: Observer's phone pre-generates hashes for the next 14 occurrences and tops up whenever it is online. If the pool runs out, that occurrence has no password (remote unlock only) and the Observer is told.
-- UNL-7 Self-lock (My Device, no Observer involved): no password. User may use **Emergency exit**: a 5-minute visible countdown, then the lock ends. Observer can also remote-unlock it.
+- UNL-7 Self-lock (My Device, no Observer involved): no password and no exit button; it ends only when the timer runs out (max 24 h). An Observer, if one is linked, can still unlock it by password or remote unlock. (Emergency exit removed in T14.)
 
 ### NOT (Notifications)
 - NOT-1 Scheduled lock: one notification 10 minutes before start.

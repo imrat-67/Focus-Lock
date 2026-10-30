@@ -47,26 +47,10 @@ class UnlockPolicyTest {
         assertEquals(UnlockPolicy.Outcome.NoPassword, UnlockPolicy.attempt(locked(pw = false), "123456", 0).outcome)
     }
 
-    @Test fun emergencyExitOnlyForOwnPasswordlessLock() {
-        assertTrue(UnlockPolicy.canEmergencyExit(locked("me", pw = false), "me"))
-        assertFalse(UnlockPolicy.canEmergencyExit(locked("obs", pw = false), "me"))
-        assertFalse(UnlockPolicy.canEmergencyExit(locked("me", pw = true), "me"))
-        assertFalse(UnlockPolicy.canEmergencyExit(locked("me", pw = false), null))
-    }
-
-    @Test fun exitCountdownIsFiveMinutesAndNotRestartedByRepeatedTaps() {
-        val s1 = UnlockPolicy.startExit(locked("me", false), 1_000)
-        assertEquals(1_000 + UnlockPolicy.EXIT_COUNTDOWN_MS, s1.exitAtElapsedMs)
-        assertEquals(s1, UnlockPolicy.startExit(s1, 50_000))
-        assertFalse(UnlockPolicy.exitDue(s1, 2_000))
-        assertTrue(UnlockPolicy.exitDue(s1, s1.exitAtElapsedMs))
-    }
-
-    @Test fun rebootNeverShortensCooldownOrExit() {
-        val s = locked().copy(cooldownUntilElapsedMs = 5, exitAtElapsedMs = 6)
+    @Test fun rebootNeverShortensCooldown() {
+        val s = locked().copy(cooldownUntilElapsedMs = 5)
         val b = UnlockPolicy.afterBoot(s, 1_000)
         assertEquals(1_000 + UnlockPolicy.COOLDOWN_MS, b.cooldownUntilElapsedMs)
-        assertEquals(1_000 + UnlockPolicy.EXIT_COUNTDOWN_MS, b.exitAtElapsedMs)
         assertEquals(0L, UnlockPolicy.afterBoot(locked(), 1_000).cooldownUntilElapsedMs)
     }
 }

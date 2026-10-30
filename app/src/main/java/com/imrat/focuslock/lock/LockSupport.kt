@@ -9,12 +9,6 @@ import com.imrat.focuslock.security.LocalSession
 import com.imrat.focuslock.security.SessionStore
 import java.io.File
 
-/** Process-wide transient state. */
-object LockState {
-    /** After the lock screen starts an emergency call, dialer windows are allowed until this elapsed time. */
-    @Volatile var dialerGraceUntilElapsedMs: Long = 0L
-}
-
 /** Reads the encrypted session file, re-decrypting only when it changed. */
 class SessionCache(ctx: Context) {
     private val file = File(ctx.applicationContext.filesDir, "sessions.bin")
@@ -36,7 +30,6 @@ class SessionCache(ctx: Context) {
 object CallGuard {
     @Suppress("DEPRECATION")
     fun isCallActive(ctx: Context): Boolean {
-        if (SystemClock.elapsedRealtime() < LockState.dialerGraceUntilElapsedMs) return true
         val audio = ctx.getSystemService(AudioManager::class.java)
         if (audio != null && audio.mode in setOf(AudioManager.MODE_IN_CALL, AudioManager.MODE_RINGTONE)) return true
         return try {
