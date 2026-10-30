@@ -7,7 +7,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T01 Android SDK at ~/Android/Sdk (platform 36, build-tools 36.1.0, adb 1.0.41), ANDROID_HOME in ~/.bashrc
 - [x] T02 Skeleton builds: debug APK OK (Compose hello screen, google-services plugin applied); versions in D16-D18
 - [x] T03 Firebase live: project, Android app, SHA-1, Google sign-in enabled, Firestore (asia-south1), placeholder deny-all rules deployed, app/google-services.json has oauth clients (see D15)
-- [ ] T04 Data layer: models, repositories, Firestore rules + emulator rules tests (SEC-3)
+- [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in not yet tested on a phone
 - [ ] T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 - [ ] T06 Lock engine: Accessibility detect, LockActivity, Full Lock, call/alarm/emergency-call exemptions (LOCK-1..4,9)
 - [ ] T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)
@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T04 (started; boot verified, git clean at 83e44e9)
-Plan/steps: [x] a) read ARCHITECTURE · [x] b) versions verified (D19) · [~] c) models/repos DONE (data/*.kt, unit tests written, not yet run); sign-in screen+VM WRITTEN (not yet compiled) · [x] d) firestore.rules + rules-tests: 25/25 pass (cd rules-tests; export JAVA_HOME=~/tools/jdk-21*; NODE_ENV=development npm i --include=dev; npm test) · [x] e) rules deployed to focuslock-imrat-67 · [ ] f) build + unit tests
-Files touched: (none yet) app/build.gradle.kts, gradle/libs*, app/src/main/**, firestore.rules, rules tests
+Task: none active.
+Plan/steps: —
+Files touched: —
 Last commit: see git log
