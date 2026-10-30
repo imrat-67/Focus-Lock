@@ -191,7 +191,7 @@ describe('sessions', () => {
     await assertSucceeds(setDoc(S(O), session(O, { pwHash: 'h', pwSalt: 's' })));
     await assertSucceeds(setDoc(doc(db(O), 'users', U, 'sessions', 's2'), session(O, { mode: 'apps', packages: ['a.b'] })));
     await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's3'), session(O, { mode: 'apps' })));             // apps need packages
-    await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's4'), session(O, { endAt: Date.now() + 13 * HOUR }))); // > 12 h
+    await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's4'), session(O, { endAt: Date.now() + 25 * HOUR }))); // > 24 h
     await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's5'), session(O, { startAt: Date.now() - 2 * HOUR, endAt: Date.now() - HOUR }))); // expired
     await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's6'), session(U)));                               // spoofed creator
     await assertFails(setDoc(doc(db(O), 'users', U, 'sessions', 's7'), session(O, { status: 'ended' })));
