@@ -73,7 +73,7 @@ fun HomeScreen(
         stringResource(R.string.app_name), scroll = false,
         actions = {
             IconButton(onClick = { sheet = true }) {
-                BadgedBox(badge = { if (hasRequest) Badge(containerColor = LockedRed) }) {
+                BadgedBox(badge = { if (hasRequest || missingPerms > 0) Badge(containerColor = LockedRed) }) {
                     Icon(Icons.Filled.AccountCircle, stringResource(R.string.h_profile))
                 }
             }
@@ -233,6 +233,7 @@ fun AddRemoteScreen(myUid: String, container: AppContainer, store: DeviceStore, 
 fun ThisDeviceScreen(lockState: LockState, onInstant: () -> Unit, onSchedule: () -> Unit, onFormats: () -> Unit, onBack: () -> Unit) {
     AppScreen(stringResource(R.string.h_this_device), onBack, actions = { StatusPill(lockState); Spacer(Modifier.padding(end = 12.dp)) }) {
         Spacer(Modifier.height(8.dp))
+        RunningAppLocks()
         FLCard(Modifier.padding(bottom = 12.dp), onClick = onInstant) {
             Text(stringResource(R.string.h_instant), style = MaterialTheme.typography.titleMedium)
             Subtle(stringResource(R.string.h_instant_sub))
@@ -242,5 +243,38 @@ fun ThisDeviceScreen(lockState: LockState, onInstant: () -> Unit, onSchedule: ()
             Subtle(stringResource(R.string.h_schedule_sub))
         }
         FLCard(onClick = onFormats) { Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium) }
+    }
+}
+
+/** Countdown for each Apps lock running on this phone (a Full Lock hides the app, so it needs none). */
+@Composable
+private fun RunningAppLocks() {
+    val ctx = LocalContext.current
+    val running by androidx.compose.runtime.produceState(emptyList<com.imrat.focuslock.security.LocalSession>()) {
+        val cache = com.imrat.focuslock.lock.SessionCache(ctx)
+        while (true) {
+            val t = android.os.SystemClock.elapsedRealtime()
+            value = cache.get().filter { it.endElapsedMs > t && it.mode == com.imrat.focuslock.data.LockMode.APPS }
+            delay(1_000)
+        }
+    }
+    if (running.isEmpty()) return
+    val clock = remember { java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT) }
+    SectionLabel(stringResource(R.string.h_running_locks))
+    running.forEach { s ->
+        val left = ((s.endElapsedMs - android.os.SystemClock.elapsedRealtime()).coerceAtLeast(0) + 999) / 1000
+        val ends = clock.format(java.util.Date(System.currentTimeMillis() + left * 1000))
+        FLCard(Modifier.padding(bottom = 12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.mode_apps), style = MaterialTheme.typography.titleMedium)
+                    Subtle(stringResource(R.string.h_apps_count, s.packages.size))
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("%d:%02d:%02d".format(left / 3600, left % 3600 / 60, left % 60), style = MaterialTheme.typography.titleLarge)
+                    Subtle(stringResource(R.string.h_ends_at, ends))
+                }
+            }
+        }
     }
 }

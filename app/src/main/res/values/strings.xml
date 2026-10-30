@@ -168,4 +168,8 @@
     <string name="perms_group_core">Required</string>
     <string name="perms_group_more">Recommended</string>
     <string name="perms_progress">%1$d of %2$d allowed</string>
+    <string name="choose_saved">Choose from saved</string>
+    <string name="h_running_locks">Running now</string>
+    <string name="h_ends_at">Ends %s</string>
+    <string name="h_apps_count">%d apps</string>
 </resources>

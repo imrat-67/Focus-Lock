@@ -71,11 +71,7 @@ fun LockNowScreen(
         }
         if (!validTime) Text(stringResource(R.string.lock_time_invalid), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         if (mode == LockMode.APPS) {
-            if (saved.isNotEmpty()) {
-                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    saved.forEach { f -> FilterChip(false, { selected = f.packages.toSet() }, { Text(f.name) }) }
-                }
-            }
+            if (saved.isNotEmpty()) SavedListPicker(saved, { selected = it })
             AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.weight(1f))
         } else {
             Spacer(Modifier.weight(1f))

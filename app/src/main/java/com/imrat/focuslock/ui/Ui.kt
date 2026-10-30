@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +40,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -163,6 +166,26 @@ fun WheelPicker(range: IntRange, value: Int, onChange: (Int) -> Unit, modifier: 
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/** "Choose from saved" dropdown for app lists. [onPick] receives the chosen list's packages. */
+@Composable
+fun SavedListPicker(lists: List<com.imrat.focuslock.data.Format>, onPick: (Set<String>) -> Unit, modifier: Modifier = Modifier) {
+    var open by remember { mutableStateOf(false) }
+    Box(modifier.fillMaxWidth()) {
+        androidx.compose.material3.OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp)) {
+            Text(stringResource(R.string.choose_saved), Modifier.weight(1f))
+            Icon(Icons.Filled.ArrowDropDown, null)
+        }
+        androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            lists.forEach { f ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = { Text("${f.name} · ${f.packages.size}") },
+                    onClick = { open = false; onPick(f.packages.toSet()) },
+                )
             }
         }
     }

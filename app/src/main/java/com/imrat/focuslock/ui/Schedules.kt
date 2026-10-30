@@ -185,9 +185,7 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
         Text(stringResource(R.string.sched_rules), style = MaterialTheme.typography.bodySmall)
         if (mode == LockMode.APPS) {
             Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                saved.forEach { f -> FilterChip(false, { selected = f.packages.toSet() }, { Text(f.name) }) }
-            }
+            if (saved.isNotEmpty()) SavedListPicker(saved, { selected = it })
             Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelLarge)
             AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.height(280.dp))
         }
