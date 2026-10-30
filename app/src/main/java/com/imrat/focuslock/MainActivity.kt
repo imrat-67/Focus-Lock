@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.imrat.focuslock.ui.AuthUiState
 import com.imrat.focuslock.ui.AuthViewModel
 import com.imrat.focuslock.ui.HomeScreen
+import com.imrat.focuslock.ui.FocusLockTheme
 import com.imrat.focuslock.ui.LoadingScreen
 import com.imrat.focuslock.security.Perms
 import com.imrat.focuslock.service.CoreService
@@ -47,8 +48,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val container = (application as FocusLockApp).container
         setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+            FocusLockTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val vm: AuthViewModel = viewModel(
                         factory = AuthViewModel.Factory(container.auth, container.users, DeviceId.get(this)),
                     )
