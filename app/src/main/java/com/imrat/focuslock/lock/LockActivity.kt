@@ -72,6 +72,15 @@ class LockActivity : ComponentActivity() {
         }
     }
 
+    /** Pressing Home/Recents stops this screen: bring it straight back while a lock is active (unless a call is in progress). */
+    override fun onStop() {
+        super.onStop()
+        val now = SystemClock.elapsedRealtime()
+        if (LockPolicy.displayed(cache.get(), now) != null && !CallGuard.isCallActive(this) && !isChangingConfigurations) {
+            LockEnforcer.cover(this)
+        }
+    }
+
     private fun emergencyCall(number: String) {
         LockState.dialerGraceUntilElapsedMs = SystemClock.elapsedRealtime() + 30_000
         val uri = Uri.parse("tel:$number")

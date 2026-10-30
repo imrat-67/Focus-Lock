@@ -1,7 +1,7 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- New build installed. Open Focus Lock > open the permissions list > grant "Display over other apps" (new). Make sure Usage access is granted too. Then re-test: Lock now (5 min, Full) and press Home / try opening apps: lock screen must come back within ~half a second every time. Tell me the result.
+- Re-test on vivo (new build installed): Lock now 5 min Full; press Home and Recents several times. Lock screen should now return in well under 1 s. Also test the emergency 112/999 button: the call screen must still show (lock must not cover it). Tell me the result.
 
 ## Do now: finish T08 step f (fix for "Home lets you browse then lock pops late" is installed, needs re-test)
 1. After user feedback: fix issues, then mark T08 DONE in STATUS (one line), commit feat(T08), push.

@@ -62,5 +62,5 @@ class ForegroundWatcher(private val ctx: Context, private val cache: SessionCach
 
     private fun shouldCoverNow(p: String, now: Long, sessions: List<LocalSession>) = LockEnforcer.shouldCover(ctx, p, cls, sessions, now)
 
-    companion object { const val ACTIVE_MS = 500L; const val IDLE_MS = 3_000L }
+    companion object { const val ACTIVE_MS = 250L; const val IDLE_MS = 3_000L }
 }
