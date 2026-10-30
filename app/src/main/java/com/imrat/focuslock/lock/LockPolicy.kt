@@ -45,6 +45,26 @@ object LockPolicy {
     fun shouldRecoverOnLeave(sessions: List<LocalSession>, nowElapsedMs: Long): Boolean =
         activeSessions(sessions, nowElapsedMs).any { it.mode == LockMode.FULL }
 
+    /** True for the Recents / app-switcher screen (lives in the launcher or System UI depending on the phone). */
+    fun isRecents(pkg: String, cls: String?): Boolean {
+        val c = cls?.lowercase() ?: return false
+        return "recent" in c && (pkg == "com.android.systemui" || "launcher" in pkg.lowercase() || "home" in pkg.lowercase())
+    }
+
+    /**
+     * Recents must be covered when it would show a locked app: always during a FULL lock, and during an Apps lock
+     * when a blocked app's name appears on screen ([labels] maps package -> app name).
+     */
+    fun recentsExposesLocked(sessions: List<LocalSession>, nowElapsedMs: Long, texts: List<String>, labels: Map<String, String>): Boolean {
+        val active = activeSessions(sessions, nowElapsedMs)
+        if (active.any { it.mode == LockMode.FULL }) return true
+        val blocked = active.flatMap { it.packages }.toSet()
+        return blocked.any { p ->
+            val name = labels[p] ?: return@any false
+            texts.any { it.contains(name, ignoreCase = true) }
+        }
+    }
+
     /** Session shown on the lock screen: the one ending last. */
     fun displayed(sessions: List<LocalSession>, nowElapsedMs: Long): LocalSession? =
         activeSessions(sessions, nowElapsedMs).maxByOrNull { it.endElapsedMs }

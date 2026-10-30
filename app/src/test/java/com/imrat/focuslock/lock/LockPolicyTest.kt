@@ -57,4 +57,19 @@ class LockPolicyTest {
         assertTrue(LockPolicy.isProtectedScreen("com.google.android.permissioncontroller", listOf("focus lock"), "Focus Lock"))
     }
     @Test fun systemUiNeverSettingsLike() = assertFalse(LockPolicy.isSettingsLike("com.android.systemui"))
+
+    @Test fun recentsDetected() {
+        assertTrue(LockPolicy.isRecents("com.android.systemui", "com.android.systemui.recents.RecentsActivity"))
+        assertTrue(LockPolicy.isRecents("com.bbk.launcher2", "com.bbk.launcher2.RecentsView"))
+        assertFalse(LockPolicy.isRecents("com.whatsapp", "com.whatsapp.RecentChats"))
+        assertFalse(LockPolicy.isRecents("com.android.systemui", null))
+    }
+    @Test fun recentsCoveredAlwaysDuringFull() =
+        assertTrue(LockPolicy.recentsExposesLocked(listOf(s(LockMode.FULL, 900)), 100, emptyList(), emptyMap()))
+    @Test fun recentsCoveredInAppsLockOnlyWhenLockedAppShown() {
+        val l = listOf(s(LockMode.APPS, 900, listOf("com.insta")))
+        val labels = mapOf("com.insta" to "Instagram")
+        assertTrue(LockPolicy.recentsExposesLocked(l, 100, listOf("Chrome", "instagram"), labels))
+        assertFalse(LockPolicy.recentsExposesLocked(l, 100, listOf("Chrome", "Maps"), labels))
+    }
 }

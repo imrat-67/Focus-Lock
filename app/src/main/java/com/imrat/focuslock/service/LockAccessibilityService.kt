@@ -5,6 +5,7 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.imrat.focuslock.R
+import com.imrat.focuslock.data.LockMode
 import com.imrat.focuslock.lock.LockEnforcer
 import com.imrat.focuslock.lock.LockPolicy
 import com.imrat.focuslock.lock.SessionCache
@@ -26,7 +27,16 @@ class LockAccessibilityService : AccessibilityService() {
         val pkg = event.packageName?.toString() ?: return
         val now = SystemClock.elapsedRealtime()
         val sessions = cache.get()
-        if (LockPolicy.activeSessions(sessions, now).isEmpty()) return
+        val active = LockPolicy.activeSessions(sessions, now)
+        if (active.isEmpty()) return
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && LockPolicy.isRecents(pkg, event.className?.toString())) {
+            if (active.any { it.mode == LockMode.FULL }) { LockEnforcer.cover(this); return }
+            if (LockPolicy.recentsExposesLocked(sessions, now, screenTexts(), labelsFor(active.flatMap { it.packages }))) {
+                performGlobalAction(GLOBAL_ACTION_HOME)
+                LockEnforcer.cover(this)
+                return
+            }
+        }
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
             LockEnforcer.shouldCover(this, pkg, event.className?.toString(), sessions, now)
         ) { LockEnforcer.cover(this); return }
@@ -37,6 +47,16 @@ class LockAccessibilityService : AccessibilityService() {
                 LockEnforcer.cover(this)
             }
         }
+    }
+
+    private val labelCache = HashMap<String, String>()
+
+    /** App names for [packages], cached (looked up once per package). */
+    private fun labelsFor(packages: Collection<String>): Map<String, String> {
+        packages.toSet().forEach { p ->
+            if (p !in labelCache) runCatching { packageManager.getApplicationInfo(p, 0).loadLabel(packageManager).toString() }.getOrNull()?.let { labelCache[p] = it }
+        }
+        return labelCache
     }
 
     /** Visible text of the active window, capped so a huge list cannot stall the service. */
