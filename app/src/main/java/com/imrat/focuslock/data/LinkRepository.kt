@@ -4,6 +4,9 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 /** `links/{userUid}`: one Observer per User. Permissions are enforced by firestore.rules, not here. */
@@ -19,6 +22,21 @@ class LinkRepository(private val db: FirebaseFirestore) {
     }
 
     suspend fun get(userUid: String): Link? = parse(doc(userUid).get().await())
+
+    /** Live link of this User (null = no Observer). */
+    fun observe(userUid: String): Flow<Link?> = doc(userUid).snapshots().map { parse(it) }
+
+    /** Live list of the Users this Observer watches or has asked to watch. */
+    fun observeUsersOf(observerUid: String): Flow<List<Link>> =
+        db.collection("links").whereEqualTo("observerUid", observerUid).snapshots()
+            .map { snap -> snap.documents.mapNotNull { parse(it) } }
+
+    /** Observer says no to a removal request: link goes back to active. */
+    suspend fun declineRemoval(userUid: String) {
+        doc(userUid).update(
+            mapOf("status" to LinkStatus.ACTIVE.wire, "removalRequestedAt" to FieldValue.delete())
+        ).await()
+    }
 
     /**
      * Observer asks to watch [targetUid]. Always completes quietly when the account is missing, already has

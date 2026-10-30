@@ -73,6 +73,13 @@ class UserRepository(private val db: FirebaseFirestore) {
         }
     }
 
+    /** Display name of a linked person, or null when the rules do not let us read it (e.g. a pending request). */
+    suspend fun displayName(uid: String): String? = try {
+        userDoc(uid).get().await().getString("displayName")
+    } catch (e: FirebaseFirestoreException) {
+        if (e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) null else throw e
+    }
+
     private companion object {
         const val MAX_CODE_TRIES = 5
     }
