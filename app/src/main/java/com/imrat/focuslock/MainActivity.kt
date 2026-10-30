@@ -66,6 +66,12 @@ class MainActivity : ComponentActivity() {
                             var remoteUid by rememberSaveable { mutableStateOf<String?>(null) }
                             var remoteName by rememberSaveable { mutableStateOf("") }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
+                            val lockActiveNow by produceState(false) { // AUTH-3: re-check every second
+                                while (true) {
+                                    value = SessionCache(this@MainActivity).get().any { it.endElapsedMs > SystemClock.elapsedRealtime() }
+                                    kotlinx.coroutines.delay(1_000)
+                                }
+                            }
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
                             } else if (remoteUid != null) {
@@ -101,6 +107,7 @@ class MainActivity : ComponentActivity() {
                                     { showLockNow = true },
                                     { showSchedules = true },
                                     { showLinks = true },
+                                    lockActiveNow,
                                 ) { vm.signOut(this@MainActivity) }
                             }
                         }

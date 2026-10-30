@@ -41,4 +41,18 @@ object LockPolicy {
     /** Session shown on the lock screen: the one ending last. */
     fun displayed(sessions: List<LocalSession>, nowElapsedMs: Long): LocalSession? =
         activeSessions(sessions, nowElapsedMs).maxByOrNull { it.endElapsedMs }
+
+    // ---- SEC-2: screens that could switch Focus Lock off while a lock is active ----
+    private val SETTINGS_HINTS = listOf("settings", "packageinstaller", "permissioncontroller", "securitycenter", "iqoo.secure", "permissionmanager")
+
+    /** True for Settings/installer packages (the only places that can deactivate, uninstall or force-stop an app). */
+    fun isSettingsLike(pkg: String): Boolean = pkg != "com.android.systemui" && SETTINGS_HINTS.any { it in pkg.lowercase() }
+
+    /**
+     * True when a Settings-like screen shows our [appLabel] anywhere (device-admin, app info, uninstall, accessibility,
+     * storage ... OEM skins rename the classes, so the name on screen is the reliable signal). Screens that never show
+     * our name (Wi-Fi, battery ...) stay usable.
+     */
+    fun isProtectedScreen(pkg: String, texts: List<String>, appLabel: String): Boolean =
+        isSettingsLike(pkg) && texts.any { it.contains(appLabel, ignoreCase = true) }
 }

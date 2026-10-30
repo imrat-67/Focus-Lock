@@ -38,4 +38,16 @@ class LockPolicyTest {
     }
     @Test fun displayedIsLatestEnding() =
         assertEquals(900L, LockPolicy.displayed(listOf(s(LockMode.FULL, 500), s(LockMode.FULL, 900)), 100)?.endElapsedMs)
+
+    @Test fun settingsScreenNamingUsIsProtected() =
+        assertTrue(LockPolicy.isProtectedScreen("com.android.settings", listOf("App info", "Focus Lock", "Uninstall"), "Focus Lock"))
+    @Test fun settingsScreenWithoutOurNameIsFree() =
+        assertFalse(LockPolicy.isProtectedScreen("com.android.settings", listOf("Wi-Fi", "Bluetooth"), "Focus Lock"))
+    @Test fun otherAppNamingUsIsNotSettings() =
+        assertFalse(LockPolicy.isProtectedScreen("com.whatsapp", listOf("Focus Lock"), "Focus Lock"))
+    @Test fun installerAndPermissionScreensCount() {
+        assertTrue(LockPolicy.isProtectedScreen("com.google.android.packageinstaller", listOf("Do you want to uninstall Focus Lock?"), "Focus Lock"))
+        assertTrue(LockPolicy.isProtectedScreen("com.google.android.permissioncontroller", listOf("focus lock"), "Focus Lock"))
+    }
+    @Test fun systemUiNeverSettingsLike() = assertFalse(LockPolicy.isSettingsLike("com.android.systemui"))
 }

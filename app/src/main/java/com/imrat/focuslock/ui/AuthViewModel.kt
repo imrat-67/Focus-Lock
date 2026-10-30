@@ -76,6 +76,9 @@ class AuthViewModel(
     }
 
     fun signOut(context: Context) {
+        // AUTH-3: never while a lock is active on this phone
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (com.imrat.focuslock.lock.SessionCache(context).get().any { it.endElapsedMs > now }) return
         viewModelScope.launch { auth.signOut(context) }
     }
 

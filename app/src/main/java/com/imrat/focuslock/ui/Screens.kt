@@ -49,7 +49,7 @@ fun SignInScreen(errorRes: Int?, onSignIn: () -> Unit) = Centered {
 }
 
 @Composable
-fun HomeScreen(profile: UserProfile, missingPerms: Int, onPerms: () -> Unit, onFormats: () -> Unit, onLockNow: () -> Unit, onSchedules: () -> Unit, onLinks: () -> Unit, onSignOut: () -> Unit) = Centered {
+fun HomeScreen(profile: UserProfile, missingPerms: Int, onPerms: () -> Unit, onFormats: () -> Unit, onLockNow: () -> Unit, onSchedules: () -> Unit, onLinks: () -> Unit, lockActive: Boolean, onSignOut: () -> Unit) = Centered {
     Text(stringResource(R.string.home_title, profile.displayName), style = MaterialTheme.typography.headlineSmall)
     Spacer(Modifier.height(4.dp))
     Text(profile.email, style = MaterialTheme.typography.bodyMedium)
@@ -72,7 +72,8 @@ fun HomeScreen(profile: UserProfile, missingPerms: Int, onPerms: () -> Unit, onF
     Spacer(Modifier.height(12.dp))
     Button(onClick = onLinks) { Text(stringResource(R.string.links_open)) }
     Spacer(Modifier.height(12.dp))
-    OutlinedButton(onClick = onSignOut) { Text(stringResource(R.string.sign_out)) }
+    OutlinedButton(onClick = onSignOut, enabled = !lockActive) { Text(stringResource(R.string.sign_out)) }
+    if (lockActive) Text(stringResource(R.string.sign_out_locked), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
 }
 
 @Composable

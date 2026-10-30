@@ -11,9 +11,10 @@
     <string name="home_friend_code_hint">Share it so someone can ask to be your Observer.</string>
     <string name="home_placeholder">Locking features arrive in the next updates.</string>
     <string name="sign_out">Sign out</string>
+    <string name="sign_out_locked">Sign-out is off while a lock is active.</string>
     <string name="other_device_title">Another phone is linked</string>
     <string name="other_device_body">This account already manages a different phone. Sign out and use a different Google account here.</string>
-    <string name="accessibility_description">Lets Focus Lock notice which app is open so it can show the lock screen while a lock is active. It does not read or store what is on screen.</string>
+    <string name="accessibility_description">Lets Focus Lock notice which app is open so it can show the lock screen while a lock is active. During a lock it also checks Settings screens for the name Focus Lock, to stop the lock being switched off. Nothing is stored or sent.</string>
     <string name="perms_title">Set up Focus Lock</string>
     <string name="perms_intro">Grant these so locks keep working even if the app is closed or the phone restarts.</string>
     <string name="perms_done">Continue</string>

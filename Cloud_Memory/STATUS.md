@@ -20,8 +20,8 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T12. SEC-1 already done (AdminReceiver + Perms DEVICE_ADMIN). Remaining:
-[ ] 1 SEC-2: LockPolicy.isProtectedScreen(pkg,cls,text) pure + tests; accessibility cover when lock active (needs windowContent for admin-deactivate/app-info screens)
-[ ] 2 AUTH-3: disable sign-out/delete while lock active (Screens/MainActivity) + test
-[ ] 3 build, tests, install, commit feat(T12), mark DONE, rewrite NEXT
-Files touched: none yet
+Task: T12. Code for SEC-2 (LockPolicy.isProtectedScreen + accessibility scan + tests) and AUTH-3 (AuthViewModel.signOut guard, Screens/MainActivity/strings) is in working tree, UNCOMMITTED, unverified.
+[x] 1 SEC-2 code written
+[x] 2 AUTH-3 code written
+[ ] 3 verify: ./gradlew testDebugUnitTest assembleDebug; install if adb device; commit feat(T12); mark DONE; rewrite NEXT; push
+Files touched: LockPolicy, LockAccessibilityService, accessibility_service_config.xml, AuthViewModel, Screens, MainActivity, strings.xml, LockPolicyTest
