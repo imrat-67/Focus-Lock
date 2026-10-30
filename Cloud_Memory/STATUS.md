@@ -9,7 +9,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T03 Firebase live: project, Android app, SHA-1, Google sign-in enabled, Firestore (asia-south1), placeholder deny-all rules deployed, app/google-services.json has oauth clients (see D15)
 - [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in VERIFIED on vivo Y29 (profile + friend code created in Firestore)
 - [x] T05 Permissions checklist, CoreService (foreground, verified on vivo), encrypted SessionStore + tests; checklist UI title overlaps status bar (fix inset, T13)
-- [ ] T06 Lock engine: Accessibility detect, LockActivity, Full Lock, call/alarm/emergency-call exemptions (LOCK-1..4,9)
+- [x] T06 Lock engine: LockPolicy+tests, LockActivity, accessibility enforcement; verified on emulator (Full/Apps lock, call exemption, emergency button, expiry, back/home); real-phone recheck in T13
 - [ ] T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)
 - [ ] T08 Instant + Scheduled, alarms, timer, reboot persistence, time-tamper guard (LOCK-5,7,8, SCH-1..3)
 - [ ] T09 Link flow: request/accept/remove, lookup, 7-day auto-complete (LINK-1..7)
@@ -19,7 +19,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T06
-Plan/steps: [x] a) LockPolicy+tests (pass) · [x] b) LockActivity · [x] c) LockAccessibilityService · [x] d) debug receiver (DEBUG_LOCK/DEBUG_CLEAR) · [~] e) vivo: lock screen shows + covers Settings when service freshly bound (VERIFIED). vivo clears adb-set accessibility setting within seconds, so user must enable it via UI (Grant button). Then check: Home/back/other apps covered, call exemption, emergency buttons, Apps Lock (--es mode apps --es pkgs com.whatsapp)
-Files touched: app/src/main/** (service/, lock/, security/), AndroidManifest.xml, res/values/strings.xml, app/src/debug/**
-Last commit: see git log
+Task: none (T07 not started)
