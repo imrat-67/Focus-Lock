@@ -1,10 +1,10 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Optional: test T09 with a 2nd Google account (other phone/emulator): send request by friend code, accept, request removal. Report anything odd.
+- Optional but valuable: with a 2nd Google account on another phone, test T09+T10: send request by friend code, accept, then Observer: Manage > Lock now, check 1-min warning + lock starts, then Unlock now. Report anything odd.
 
-## Do now: T10 remote lock/unlock
-Read SRS SCH-4, UNL-1, NOT-1..5, SessionRepository, sessions rules; plan steps into CHECKPOINT; Observer-side Add Device chooser (My/Remote) + remote device screens (Formats/Lock/Schedules for target uid) come here.
+## Do now: T10b
+NOT-3 local notifications for link/removal requests (listener in CoreService on own link + observer's list); SCH-4 Observer cancel of schedule-made sessions (rules forbid User writing createdBy=observer docs, so Observer must write the session doc when cancelling); remote schedules UI (SchedulesScreen takes one uid); LINK-7 guard on Observer Release using sessions listener. Then T11 (emergency password).
 
 ## Notes
 - Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120 --es pkgs a.b,c.d` ; DEBUG_CLEAR ends it (phone: adb is wireless, ~/Android/Sdk/platform-tools/adb).

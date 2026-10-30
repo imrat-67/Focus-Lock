@@ -112,4 +112,12 @@
     <string name="back">Back</string>
     <string name="rwarn_title">Your phone is about to be locked</string>
     <string name="rwarn_body">Your Observer started a lock. It begins in 1 minute. Contact them if this is a mistake.</string>
+    <string name="remote_title">Remote device: %s</string>
+    <string name="remote_lock_now">Lock now (starts in 1 minute)</string>
+    <string name="remote_sessions">Locks on this phone</string>
+    <string name="remote_none">No active locks.</string>
+    <string name="remote_session_line">%1$s until %2$s</string>
+    <string name="remote_unlock">Unlock now</string>
+    <string name="remote_unlock_note">Unlocking needs their phone to be online.</string>
+    <string name="links_manage">Manage</string>
 </resources>

@@ -51,7 +51,7 @@ private fun produceName(uid: String, users: UserRepository, fallback: String) =
 
 /** Link management: my Observer (LINK-2/4/6/7) and the people I observe. */
 @Composable
-fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, lockActive: Boolean, onBack: () -> Unit) {
+fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, lockActive: Boolean, onOpenPerson: (String, String) -> Unit, onBack: () -> Unit) {
     val myLink by remember { links.observe(myUid) }.collectAsStateWithLifecycle(null)
     val people by remember { links.observeUsersOf(myUid) }.collectAsStateWithLifecycle(emptyList())
     val scope = rememberCoroutineScope()
@@ -117,9 +117,13 @@ fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, loc
                         Text(who)
                         OutlinedButton(onClick = { run { links.deletePending(p.userUid) } }) { Text(stringResource(R.string.links_cancel)) }
                     }
-                    LinkStatus.ACTIVE -> Text(who)
+                    LinkStatus.ACTIVE -> {
+                        Text(who)
+                        Button(onClick = { onOpenPerson(p.userUid, who) }) { Text(stringResource(R.string.links_manage)) }
+                    }
                     LinkStatus.REMOVAL_REQUESTED -> {
                         Text(stringResource(R.string.links_removal_from, who))
+                        OutlinedButton(onClick = { onOpenPerson(p.userUid, who) }) { Text(stringResource(R.string.links_manage)) }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = { run { links.completeRemoval(p.userUid) } }) { Text(stringResource(R.string.links_release)) }
                             OutlinedButton(onClick = { run { links.declineRemoval(p.userUid) } }) { Text(stringResource(R.string.links_keep)) }

@@ -10,6 +10,7 @@ import com.imrat.focuslock.lock.InstalledApps
 import com.imrat.focuslock.ui.FormatsScreen
 import com.imrat.focuslock.ui.LockNowScreen
 import com.imrat.focuslock.ui.LinksScreen
+import com.imrat.focuslock.ui.RemoteDeviceScreen
 import com.imrat.focuslock.lock.SessionCache
 import android.os.SystemClock
 import com.imrat.focuslock.ui.SchedulesScreen
@@ -62,13 +63,18 @@ class MainActivity : ComponentActivity() {
                             var showLockNow by rememberSaveable { mutableStateOf(false) }
                             var showSchedules by rememberSaveable { mutableStateOf(false) }
                             var showLinks by rememberSaveable { mutableStateOf(false) }
+                            var remoteUid by rememberSaveable { mutableStateOf<String?>(null) }
+                            var remoteName by rememberSaveable { mutableStateOf("") }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
+                            } else if (remoteUid != null) {
+                                BackHandler { remoteUid = null }
+                                RemoteDeviceScreen(remoteUid.orEmpty(), s.profile.uid, remoteName, container) { remoteUid = null }
                             } else if (showLinks) {
                                 BackHandler { showLinks = false }
                                 val lockActive = SessionCache(this@MainActivity).get().any { it.endElapsedMs > SystemClock.elapsedRealtime() }
-                                LinksScreen(s.profile.uid, container.links, container.users, lockActive) { showLinks = false }
+                                LinksScreen(s.profile.uid, container.links, container.users, lockActive, { uid, name -> remoteUid = uid; remoteName = name }) { showLinks = false }
                             } else if (showSchedules) {
                                 BackHandler { showSchedules = false }
                                 SchedulesScreen(s.profile.uid, apps, container.schedules, container.formats) { showSchedules = false }
