@@ -48,4 +48,18 @@
     <string name="lock_password_pending">Password unlock is not available yet.</string>
     <string name="lock_call_112">Emergency call 112</string>
     <string name="lock_call_999">Emergency call 999</string>
+    <string name="formats_title">Formats</string>
+    <string name="formats_open">Formats (app lists)</string>
+    <string name="formats_new">New format</string>
+    <string name="formats_empty">No formats yet. A format is a named list of apps you can lock in one tap.</string>
+    <string name="formats_apps_count">%d apps</string>
+    <string name="format_name">Format name</string>
+    <string name="format_search">Search apps</string>
+    <string name="format_selected">%d selected</string>
+    <string name="format_save">Save</string>
+    <string name="format_edit">Edit</string>
+    <string name="format_delete">Delete</string>
+    <string name="format_cancel">Cancel</string>
+    <string name="format_back">Back</string>
+    <string name="format_error">Could not save. Check your connection and try again.</string>
 </resources>
