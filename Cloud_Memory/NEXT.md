@@ -1,7 +1,7 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Unlock the phone screen and keep it awake (Developer options > Stay awake). Then T06 on-device test can run.
+- Open Focus Lock > Accessibility service > Grant, turn Focus Lock ON (vivo resets it if set via adb). Keep screen awake. Then T06 test can finish.
 
 ## Do now: T06 Lock engine (LOCK-1..4,9)
 1. `grep -n "LOCK-" SRS.md`; read ARCHITECTURE "Runtime pieces".

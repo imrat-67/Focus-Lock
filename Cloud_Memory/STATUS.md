@@ -20,6 +20,6 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T06
-Plan/steps: [x] a) LockPolicy+tests (pass) · [x] b) LockActivity · [x] c) LockAccessibilityService · [x] d) debug receiver (DEBUG_LOCK/DEBUG_CLEAR) · [ ] e) verify on vivo: BLOCKED, phone screen asleep/locked; a11y service enabled via adb; then check Full Lock, call exemption, emergency button, Apps Lock
+Plan/steps: [x] a) LockPolicy+tests (pass) · [x] b) LockActivity · [x] c) LockAccessibilityService · [x] d) debug receiver (DEBUG_LOCK/DEBUG_CLEAR) · [~] e) vivo: lock screen shows + covers Settings when service freshly bound (VERIFIED). vivo clears adb-set accessibility setting within seconds, so user must enable it via UI (Grant button). Then check: Home/back/other apps covered, call exemption, emergency buttons, Apps Lock (--es mode apps --es pkgs com.whatsapp)
 Files touched: app/src/main/** (service/, lock/, security/), AndroidManifest.xml, res/values/strings.xml, app/src/debug/**
 Last commit: see git log
