@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,7 +65,7 @@ fun PermissionsScreen(onDone: () -> Unit) {
 
     val states = remember(tick) { Perm.entries.map { it to Perms.isGranted(ctx, it) } }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
+    Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(20.dp)) {
         Text(stringResource(R.string.perms_title), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(4.dp))
         Text(stringResource(R.string.perms_intro), style = MaterialTheme.typography.bodyMedium)

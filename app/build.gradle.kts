@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -18,8 +20,20 @@ android {
         versionName = "0.1.0"
     }
 
+    val ksFile = rootProject.file("keystore.properties")
+    val ks = Properties().apply { if (ksFile.exists()) ksFile.inputStream().use { load(it) } }
+    signingConfigs {
+        if (ksFile.exists()) create("release") {
+            storeFile = file(ks.getProperty("storeFile"))
+            storePassword = ks.getProperty("storePassword")
+            keyAlias = ks.getProperty("keyAlias")
+            keyPassword = ks.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
+            if (ksFile.exists()) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

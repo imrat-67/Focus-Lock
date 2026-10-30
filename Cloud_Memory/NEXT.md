@@ -1,14 +1,15 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- none. (After any reinstall, re-enable Settings > Accessibility > Focus Lock.)
+1. Firebase console > Project settings > Android app > Add fingerprint SHA-1: 52:42:11:0A:7C:6F:A2:C4:31:F2:7F:DF:C9:3E:19:D5:C2:D3:AB:E8 (release key). Then re-download google-services.json into app/ and tell Claude.
+2. BACK UP ~/focuslock-keys/release.jks and keystore.properties (lose them = cannot update the app).
+3. Release APK: app/build/outputs/apk/release/app-release.apk (3.2 MB). Installing it needs `adb uninstall com.imrat.focuslock` first (different signing key than debug).
 
-## Do now: T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
-First command: grep -n "T13\|Notes" Cloud_Memory/NEXT.md ; then fix Permissions title inset, build `./gradlew assembleRelease`.
+## Do now: T13 rest
+Rebuild release with new google-services.json, install, device pass (sign-in, lock, reboot, clock change, scheduled start, SEC-2), then GitHub Release (gh missing: user uploads APK on github.com Releases, tag v0.1.0).
 
 ## Notes
-- LockActivity is NOT exported: `am start` fails. To show the lock in tests, broadcast DEBUG_LOCK then `am start -n com.imrat.focuslock/.MainActivity`. Extras: --es pw 123456, --ez self true. Read screen with `adb shell uiautomator dump`.
-- T13: LockScreen keeps `outcome` after a session ends (reset on session id change). First tap on Unlock after typing only hides keyboard on vivo. Confirm boot rebase uses UnlockPolicy.afterBoot. Permissions screen title overlaps status bar. Release APK < 15 MB (debug is 20 MB). Device-test pass: reboot/clock-tamper/scheduled-start/notice.
-- Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120`; DEBUG_CLEAR ends it (adb wireless, ~/Android/Sdk/platform-tools/adb).
-- Observer-made schedule sessions have no server doc (LINK-7 guard blind); Observer schedules use Observer timezone.
+- Debug lock helpers only in debug build: DEBUG_LOCK/DEBUG_CLEAR via DebugSessionReceiver (adb at ~/Android/Sdk/platform-tools/adb).
+- After any reinstall re-enable Settings > Accessibility > Focus Lock.
+- Known: first tap on Unlock after typing only hides keyboard on vivo; LockScreen keeps `outcome` after session end; confirm boot rebase uses UnlockPolicy.afterBoot.
 - Rules tests: cd rules-tests; export JAVA_HOME=~/tools/jdk-21.0.13+9; NODE_ENV=development npm i --include=dev; npm test.

@@ -17,12 +17,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T10b NOT-3 alerts (LinkAlerts, 3 tests); SCH-4 Observer deleting/disabling a schedule ends its running session (ScheduleCancel, 3 tests); Observer can manage target's schedules (RemoteDevice); LINK-7 Release guard (server-visible locks only). Self-checked: app+service run on vivo without crash, 30 emulator rules tests pass (5 new for app query shapes), debug lock re-covers after Home. Two-account end-to-end not run by Claude (no 2nd login)
 - [x] T11 Emergency password (UnlockPolicy, PasswordVault, regenerate, Emergency exit, schedule pwPool + SchedulePoolTopUp + RemoteDevice list; 92+ unit tests; T11a device-verified, T11b builds+installs on vivo, 2-account pool flow NOT run by Claude)
 - [x] T12 Hardening: SEC-1 Device Admin; SEC-2 LockPolicy.isProtectedScreen + accessibility scan (windowContent) + tests; AUTH-3 sign-out disabled during lock (VM guard + UI). 89 unit tests pass, installed on vivo. SEC-2 device-verified on vivo (App info covered by LockActivity during lock)
-- [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
+- [~] T13 Done: perms inset, signed release APK 3.2 MB (R8, keystore ~/focuslock-keys, keystore.properties ignored), README. Left: add release SHA-1 to Firebase, on-device pass, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T13.
-[ ] 1 Permissions screen status-bar inset
-[ ] 2 release build: R8 + shrinkResources, size < 15 MB, signing (local keystore, git-ignored)
-[ ] 3 README
-[ ] 4 GitHub Release (needs gh auth? else USER ACTION)
-Files touched: none yet
+Task: T13 remaining: user adds release SHA-1; install release on phone; device pass; GitHub Release (gh not installed).
