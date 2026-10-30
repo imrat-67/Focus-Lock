@@ -20,6 +20,6 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T06
-Plan/steps: [ ] a) LockPolicy (pure) + unit tests · [ ] b) LockActivity (Compose: countdown, who, mode, password field UI-only, Emergency-call button) + strings · [ ] c) LockAccessibilityService enforcement (reads SessionStore, call/alarm/exemptions via CallGuard) · [ ] d) debug-only receiver to inject a test session (adb) · [ ] e) build, install, verify Full Lock on vivo
+Plan/steps: [x] a) LockPolicy+tests (pass) · [x] b) LockActivity · [x] c) LockAccessibilityService · [x] d) debug receiver (DEBUG_LOCK/DEBUG_CLEAR) · [ ] e) verify on vivo: BLOCKED, phone screen asleep/locked; a11y service enabled via adb; then check Full Lock, call exemption, emergency button, Apps Lock
 Files touched: app/src/main/** (service/, lock/, security/), AndroidManifest.xml, res/values/strings.xml, app/src/debug/**
 Last commit: see git log

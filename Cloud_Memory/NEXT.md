@@ -1,7 +1,7 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- None. Phone connected via wireless debugging (re-pair if `adb devices` is empty).
+- Unlock the phone screen and keep it awake (Developer options > Stay awake). Then T06 on-device test can run.
 
 ## Do now: T06 Lock engine (LOCK-1..4,9)
 1. `grep -n "LOCK-" SRS.md`; read ARCHITECTURE "Runtime pieces".
