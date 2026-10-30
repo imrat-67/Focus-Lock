@@ -8,6 +8,11 @@ import androidx.compose.runtime.produceState
 import com.imrat.focuslock.data.AppEntry
 import com.imrat.focuslock.lock.InstalledApps
 import com.imrat.focuslock.ui.FormatsScreen
+import com.imrat.focuslock.ui.LockNowScreen
+import com.imrat.focuslock.lock.LockActivity
+import com.imrat.focuslock.lock.SessionEngine
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,9 +55,21 @@ class MainActivity : ComponentActivity() {
                         is AuthUiState.Ready -> {
                             LaunchedEffect(Unit) { CoreService.start(this@MainActivity) }
                             var showFormats by rememberSaveable { mutableStateOf(false) }
+                            var showLockNow by rememberSaveable { mutableStateOf(false) }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
+                            } else if (showLockNow) {
+                                BackHandler { showLockNow = false }
+                                LockNowScreen(s.profile.uid, apps, container.formats, { mode, pkgs, ms ->
+                                    lifecycleScope.launch {
+                                        val started = withContext(Dispatchers.IO) {
+                                            SessionEngine(this@MainActivity).startSelfInstant(s.profile.uid, mode, pkgs, ms)
+                                        }
+                                        showLockNow = false
+                                        if (started != null) startActivity(LockActivity.intent(this@MainActivity))
+                                    }
+                                }) { showLockNow = false }
                             } else if (showFormats) {
                                 BackHandler { showFormats = false }
                                 FormatsScreen(s.profile.uid, s.profile.uid, apps, container.formats) { showFormats = false }
@@ -62,6 +79,7 @@ class MainActivity : ComponentActivity() {
                                     Perms.missing(this@MainActivity).size,
                                     { showPerms = true },
                                     { showFormats = true },
+                                    { showLockNow = true },
                                 ) { vm.signOut(this@MainActivity) }
                             }
                         }
