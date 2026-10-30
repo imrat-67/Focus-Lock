@@ -25,6 +25,8 @@ data class Schedule(
     val endMin: Int,
     val tz: String,
     val enabled: Boolean,
+    /** UNL-6, Observer-made schedules only: occurrence start (ms, text) -> "hash:salt". */
+    val pwPool: Map<String, String> = emptyMap(),
 ) {
     fun toSpec(): ScheduleSpec = ScheduleSpec(
         days.mapNotNull { runCatching { DayOfWeek.of(it) }.getOrNull() }.toSet(), startMin, endMin,
@@ -41,6 +43,7 @@ object ScheduleCodec {
         put("createdBy", s.createdBy); put("mode", s.mode.wire)
         put("startMin", s.startMin); put("endMin", s.endMin); put("tz", s.tz); put("enabled", s.enabled)
         if (s.packages.isNotEmpty()) put("packages", s.packages)
+        if (s.pwPool.isNotEmpty()) put("pwPool", s.pwPool)
         if (s.oneTimeDate != null) put("oneTimeDate", s.oneTimeDate) else put("days", s.days.sorted())
     }
 
@@ -54,6 +57,7 @@ object ScheduleCodec {
             id, by, mode, (m["packages"] as? List<*>)?.filterIsInstance<String>().orEmpty(),
             (m["days"] as? List<*>)?.filterIsInstance<Number>()?.map { it.toInt() }?.toSet().orEmpty(),
             m["oneTimeDate"] as? String, start, end, tz, m["enabled"] as? Boolean ?: true,
+            (m["pwPool"] as? Map<*, *>)?.mapNotNull { (k, v) -> if (k is String && v is String) k to v else null }?.toMap().orEmpty(),
         )
     }
 
@@ -63,7 +67,7 @@ object ScheduleCodec {
                 JSONObject().put("id", s.id).put("by", s.createdBy).put("mode", s.mode.wire)
                     .put("pkgs", JSONArray(s.packages)).put("days", JSONArray(s.days.toList()))
                     .put("date", s.oneTimeDate ?: JSONObject.NULL).put("st", s.startMin).put("en", s.endMin)
-                    .put("tz", s.tz).put("on", s.enabled)
+                    .put("tz", s.tz).put("on", s.enabled).put("pool", JSONObject(s.pwPool))
             )
         }
     }.toString()
@@ -77,6 +81,7 @@ object ScheduleCodec {
                 o.getString("id"), o.getString("by"), LockMode.parse(o.getString("mode")) ?: return@mapNotNull null,
                 (0 until pk.length()).map { pk.getString(it) }, (0 until dy.length()).map { dy.getInt(it) }.toSet(),
                 if (o.isNull("date")) null else o.getString("date"), o.getInt("st"), o.getInt("en"), o.getString("tz"), o.getBoolean("on"),
+                o.optJSONObject("pool")?.let { po -> po.keys().asSequence().associateWith { k -> po.getString(k) } }.orEmpty(),
             )
         }
     } catch (_: org.json.JSONException) {

@@ -138,10 +138,12 @@ class SessionEngine(ctx: Context) {
         val done = prefs.getStringSet("keys", emptySet()).orEmpty()
         if (p.key in done) return null
         prefs.edit().putStringSet("keys", (done + p.key).toList().takeLast(60).toSet()).apply()
-        val s = SessionPlan.build(p.key, sch.createdBy, sch.mode, sch.packages, p.endMs - srv, srv, el)
+        val me = FirebaseAuth.getInstance().currentUser?.uid
+        // UNL-6: an Observer's schedule brings a hash for this occurrence; none left => remote unlock only. Own schedules: none (UNL-7).
+        val pw = if (sch.createdBy != me) SchedulePool.entryFor(sch, p.startMs) else null
+        val s = SessionPlan.build(p.key, sch.createdBy, sch.mode, sch.packages, p.endMs - srv, srv, el, pw?.first, pw?.second)
         store.save(SessionPlan.prune(store.load(), el) + s)
         scheduleEnd(s)
-        val me = FirebaseAuth.getInstance().currentUser?.uid
         if (me != null && sch.createdBy == me) {
             val doc = LockSession(
                 p.key, me, sch.mode, SessionKind.SCHEDULED, sch.packages, p.startMs, p.endMs, SessionStatus.ACTIVE,
