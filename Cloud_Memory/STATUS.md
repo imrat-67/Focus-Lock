@@ -19,8 +19,8 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T12 Hardening: SEC-1 Device Admin; SEC-2 LockPolicy.isProtectedScreen + accessibility scan (windowContent) + tests; AUTH-3 sign-out disabled during lock (VM guard + UI). 89 unit tests pass, installed on vivo. SEC-2 device-verified on vivo (App info covered by LockActivity during lock)
 - [~] T13 Done: perms inset, signed release APK 3.2 MB (R8, keystore ~/focuslock-keys, keystore.properties ignored), README. Left: add release SHA-1 to Firebase, on-device pass, GitHub Release
 
+- [x] T15 Polish: logo D adaptive icon, unlink wording, device name on request, app icons in lists, permission page redesign, READ_PHONE_STATE dropped, Formats/Schedules/Instant-lock layouts; installed on vivo via wifi adb, Instant lock Apps screen checked by screenshot (launcher icon not yet eyeballed)
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T15. User picked logo D (navy #0F172A bg, teal #2DD4BF progress ring, white padlock). Phone on wifi adb. Plan: [x] a adaptive icon D (files exist, manifest set) [x] h LockNow Apps mode edits in code (uncommitted) [ ] g build+tests, then commit, install via wifi adb (user: wifi debugging on), push
-Files: res/drawable, res/mipmap-anydpi-v26, AndroidManifest.xml, ui/LockNow.kt, ui/Ui.kt
+None. T15 finished; waiting for user's feedback from device testing.
