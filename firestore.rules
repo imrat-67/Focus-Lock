@@ -134,6 +134,7 @@ service cloud.firestore {
             && request.resource.data.endedBy == request.auth.uid)
           // Regenerate password (UNL-5): only the Observer who created the session.
           || (isObserverOf(uid) && resource.data.createdBy == request.auth.uid
+            && resource.data.status != 'ended'
             && onlyChanges(['pwHash', 'pwSalt'])
             && str(request.resource.data.pwHash, 128) && str(request.resource.data.pwSalt, 128))
           // Informational flag written by the User's phone after a local password unlock.
@@ -153,7 +154,7 @@ service cloud.firestore {
         && request.resource.data.uid == request.auth.uid
         && (
           (key.size() == 64 && request.auth.token.email_verified == true
-            && key == hashing.sha256(request.auth.token.email.lower().toUtf8()).toHexString())
+            && key == hashing.sha256(request.auth.token.email.lower().toUtf8()).toHexString().lower())
           || (key.size() == 8
             && getAfter(userPath(request.auth.uid)).data.friendCode == key)
         );
