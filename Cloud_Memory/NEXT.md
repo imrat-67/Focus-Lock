@@ -2,7 +2,7 @@
 
 ## USER ACTION NEEDED
 - Before T05: plug in your Android phone, enable Developer options → USB debugging, approve this computer. Tell Claude the phone model + Android version.
-- Before T03: (Claude will give click-by-click steps) create a Firebase project, enable Google sign-in.
+- T03: in Firebase console enable Authentication→Google, and create Firestore DB (asia-south1, production mode). Links: https://console.firebase.google.com/project/focuslock-imrat-67/authentication and .../firestore. Then Claude re-downloads app/google-services.json and checks `oauth_client` is non-empty.
 
 ## Do now: T02 Skeleton
 1. Create Gradle Kotlin-DSL project in the repo root: `settings.gradle.kts`, root `build.gradle.kts`, `gradle/libs.versions.toml`, `:app` module, package `com.imrat.focuslock`, minSdk 26, compile/target 36.

@@ -14,3 +14,4 @@ D11 · Removal request auto-completes after 7 days; blocked during active lock �
 D12 · Single `:app` module, manual DI, no Hilt · small APK, fewer moving parts
 D13 · Not 100% bypass-proof (Safe Mode/ADB/root/factory reset) · Android limitation; documented in SRS SEC-6
 D14 · compileSdk/targetSdk 36, build-tools 36.1.0, SDK in ~/Android/Sdk (cmdline-tools build 14742923) · latest stable at setup time
+D15 · Firebase project `focuslock-imrat-67` (app id 1:379550728749:android:fe14974400c5decbdc6ea4, pkg com.imrat.focuslock), Firestore region asia-south1, debug SHA1 87:49:8B:64:25:58:DC:16:33:35:06:F6:C0:FF:D7:7E:FE:49:AA:63 registered · created via CLI; app/google-services.json is git-ignored (re-download with `firebase apps:sdkconfig ANDROID <appId> --project focuslock-imrat-67 --out app/google-services.json`)

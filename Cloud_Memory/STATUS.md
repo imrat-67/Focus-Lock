@@ -6,7 +6,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T00 Docs, repo init, Cloud_Memory v2 (SRS v2, ARCHITECTURE)
 - [x] T01 Android SDK at ~/Android/Sdk (platform 36, build-tools 36.1.0, adb 1.0.41), ANDROID_HOME in ~/.bashrc
 - [ ] T02 Skeleton: Gradle KTS + version catalog + Compose app `com.imrat.focuslock`, builds debug APK, .gitignore
-- [ ] T03 Firebase: USER creates project + Google sign-in + adds SHA-1; Claude wires google-services.json, Auth, Firestore, deploys rules (AUTH-1,2)
+- [~] T03 Firebase: project+Android app+SHA-1+config DONE (see D15). PENDING USER: enable Google sign-in + create Firestore DB (asia-south1, production mode) in console; then re-download google-services.json (needs oauth client), write firestore.rules/firebase.json, deploy rules (AUTH-1,2)
 - [ ] T04 Data layer: models, repositories, Firestore rules + emulator rules tests (SEC-3)
 - [ ] T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 - [ ] T06 Lock engine: Accessibility detect, LockActivity, Full Lock, call/alarm/emergency-call exemptions (LOCK-1..4,9)
