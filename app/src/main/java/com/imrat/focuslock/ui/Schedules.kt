@@ -66,31 +66,30 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
         }
         return
     }
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp)) {
-        Text(stringResource(R.string.sched_title), style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        if (list.isEmpty()) Text(stringResource(R.string.sched_empty), style = MaterialTheme.typography.bodyMedium)
-        LazyColumn(Modifier.weight(1f)) {
+    AppScreen(stringResource(R.string.sched_title), onBack, scroll = false) {
+        if (list.isEmpty()) Subtle(stringResource(R.string.sched_empty), Modifier.padding(top = 8.dp))
+        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(list, key = { it.id }) { s ->
                 val mine = s.createdBy == myUid
-                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        val whenText = s.oneTimeDate ?: s.days.sorted().joinToString(" ") { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
-                        Text("$whenText  ${hhmm(s.startMin)}–${hhmm(s.endMin)}", style = MaterialTheme.typography.titleMedium)
-                        val modeText = stringResource(if (s.mode == LockMode.FULL) R.string.mode_full else R.string.mode_apps)
-                        Text(modeText + if (mine) "" else " · " + stringResource(R.string.sched_by_observer), style = MaterialTheme.typography.bodySmall)
-                    }
-                    if (mine) {
-                        Switch(s.enabled, { on -> scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } } })
-                        TextButton(onClick = { scope.launch { runCatching { repo.delete(uid, s.id) } } }) { Text(stringResource(R.string.format_delete)) }
+                FLCard {
+                    Row(Modifier.padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            val whenText = s.oneTimeDate ?: s.days.sorted().joinToString(" ") { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
+                            Text("$whenText  ${hhmm(s.startMin)}–${hhmm(s.endMin)}", style = MaterialTheme.typography.titleMedium)
+                            val modeText = stringResource(if (s.mode == LockMode.FULL) R.string.mode_full else R.string.mode_apps)
+                            Subtle(modeText + if (mine) "" else " · " + stringResource(R.string.sched_by_observer))
+                        }
+                        if (mine) {
+                            Switch(s.enabled, { on -> scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } } })
+                            TextButton(onClick = { scope.launch { runCatching { repo.delete(uid, s.id) } } }) {
+                                Text(stringResource(R.string.format_delete), color = MaterialTheme.colorScheme.error)
+                            }
+                        }
                     }
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { creating = true }) { Text(stringResource(R.string.sched_new)) }
-            OutlinedButton(onClick = onBack) { Text(stringResource(R.string.format_back)) }
-        }
+        PrimaryButton(stringResource(R.string.sched_new), { creating = true }, Modifier.padding(top = 12.dp, bottom = 16.dp))
     }
 }
 
@@ -155,8 +154,8 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
         start, end, ZoneId.systemDefault().id, true,
     )
     val ok = draft.isUsable()
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp).verticalScroll(rememberScrollState())) {
-        Text(stringResource(R.string.sched_new), style = MaterialTheme.typography.headlineSmall)
+    AppScreen(stringResource(R.string.sched_new), onCancel, scroll = false) {
+        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(mode == LockMode.FULL, { mode = LockMode.FULL }, { Text(stringResource(R.string.mode_full)) })
@@ -193,9 +192,7 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
             AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.height(280.dp))
         }
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { onSave(draft) }, enabled = ok) { Text(stringResource(R.string.format_save)) }
-            OutlinedButton(onClick = onCancel) { Text(stringResource(R.string.format_cancel)) }
         }
+        PrimaryButton(stringResource(R.string.format_save), { onSave(draft) }, Modifier.padding(top = 8.dp, bottom = 16.dp), enabled = ok)
     }
 }

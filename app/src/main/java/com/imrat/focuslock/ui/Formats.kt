@@ -133,26 +133,25 @@ fun FormatsScreen(targetUid: String, myUid: String, apps: List<AppEntry>, repo: 
         return
     }
     val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp)) {
-        Text(stringResource(R.string.formats_title), style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(8.dp))
-        if (formats.isEmpty()) Text(stringResource(R.string.formats_empty), style = MaterialTheme.typography.bodyMedium)
-        LazyColumn(Modifier.weight(1f)) {
+    AppScreen(stringResource(R.string.formats_title), onBack, scroll = false) {
+        if (formats.isEmpty()) Subtle(stringResource(R.string.formats_empty), Modifier.padding(top = 8.dp))
+        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(formats, key = { it.id }) { f ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(f.name, style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.formats_apps_count, f.packages.size), style = MaterialTheme.typography.bodySmall)
+                FLCard {
+                    Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(f.name, style = MaterialTheme.typography.titleMedium)
+                            Subtle(stringResource(R.string.formats_apps_count, f.packages.size))
+                        }
+                        TextButton(onClick = { editing = f }) { Text(stringResource(R.string.format_edit)) }
+                        TextButton(onClick = { scope.launch { runCatching { repo.delete(targetUid, f.id) } } }) {
+                            Text(stringResource(R.string.format_delete), color = MaterialTheme.colorScheme.error)
+                        }
                     }
-                    TextButton(onClick = { editing = f }) { Text(stringResource(R.string.format_edit)) }
-                    TextButton(onClick = { scope.launch { runCatching { repo.delete(targetUid, f.id) } } }) { Text(stringResource(R.string.format_delete)) }
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { creating = true }) { Text(stringResource(R.string.formats_new)) }
-            OutlinedButton(onClick = onBack) { Text(stringResource(R.string.format_back)) }
-        }
+        PrimaryButton(stringResource(R.string.formats_new), { creating = true }, Modifier.padding(top = 12.dp, bottom = 16.dp))
     }
 }
 
@@ -164,20 +163,19 @@ private fun FormatEditor(
     var selected by remember { mutableStateOf(existing?.packages.orEmpty().toSet()) }
     var failed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp)) {
+    AppScreen(stringResource(if (existing == null) R.string.formats_new else R.string.format_edit), onCancel, scroll = false) {
+        Spacer(Modifier.height(8.dp))
         OutlinedTextField(
-            value = name, onValueChange = { if (it.length <= FormatCodec.MAX_NAME) name = it }, singleLine = true,
+            value = name, onValueChange = { if (it.length <= FormatCodec.MAX_NAME) name = it }, singleLine = true, shape = MaterialTheme.shapes.medium,
             label = { Text(stringResource(R.string.format_name)) }, modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(8.dp))
         AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.weight(1f))
         if (failed) Text(stringResource(R.string.format_error), color = MaterialTheme.colorScheme.error)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-            Button(
-                enabled = FormatCodec.isValid(name, selected),
-                onClick = { scope.launch { failed = !runCatching { onSave(name, selected) }.isSuccess } },
-            ) { Text(stringResource(R.string.format_save)) }
-            OutlinedButton(onClick = onCancel) { Text(stringResource(R.string.format_cancel)) }
-        }
+        PrimaryButton(
+            stringResource(R.string.format_save),
+            { scope.launch { failed = !runCatching { onSave(name, selected) }.isSuccess } },
+            Modifier.padding(top = 8.dp, bottom = 16.dp), enabled = FormatCodec.isValid(name, selected),
+        )
     }
 }
