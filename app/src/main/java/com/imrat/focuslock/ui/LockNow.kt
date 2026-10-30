@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.text.style.TextAlign
 import com.imrat.focuslock.R
 import com.imrat.focuslock.data.AppEntry
 import com.imrat.focuslock.data.FormatRepository
@@ -75,14 +76,11 @@ fun LockNowScreen(
             AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.weight(1f))
         } else {
             Spacer(Modifier.weight(1f))
-            Subtle(stringResource(R.string.locknow_full_hint))
-            Spacer(Modifier.weight(1f))
         }
-        Subtle(stringResource(R.string.locknow_warning), Modifier.padding(top = 10.dp))
-        Spacer(Modifier.height(10.dp))
+        Subtle(stringResource(R.string.locknow_warning), Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp), align = TextAlign.Center)
         PrimaryButton(
             stringResource(R.string.locknow_start), { onStart(mode, selected.toList(), total * 60_000L) },
-            Modifier.padding(bottom = 16.dp), enabled = validTime && (mode == LockMode.FULL || selected.isNotEmpty()),
+            Modifier.padding(bottom = 20.dp), enabled = validTime && (mode == LockMode.FULL || selected.isNotEmpty()),
         )
     }
 }
