@@ -20,4 +20,9 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none in progress. Next: T13.
+Task: T13.
+[ ] 1 Permissions screen status-bar inset
+[ ] 2 release build: R8 + shrinkResources, size < 15 MB, signing (local keystore, git-ignored)
+[ ] 3 README
+[ ] 4 GitHub Release (needs gh auth? else USER ACTION)
+Files touched: none yet
