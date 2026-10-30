@@ -34,7 +34,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - LOCK-2 Full Lock: whenever the screen is unlocked, the Focus Lock lock screen covers everything. Allowed through: the lock screen itself, an incoming/ongoing call UI (dialer is allowed only while a call is active, so outgoing dialing stays blocked), a ringing alarm, and the lock screen's own Emergency-call button (dials 999/112). The system lock-screen emergency dialer is unaffected.
 - LOCK-3 Apps Lock: opening any blocked app shows the lock screen instead. Settings and all other apps work unless included.
 - LOCK-4 Lock screen shows: live countdown, who locked, mode, password field, Emergency-call button. Nothing else.
-- LOCK-5 Maximum single session length: 12 hours.
+- LOCK-5 Maximum single session length: 24 hours (changed from 12 in T14).
 - LOCK-6 Enforcement is local and works fully offline once a session is known to the phone.
 - LOCK-7 Active sessions survive reboot and app/process death (restored from encrypted local cache at boot).
 - LOCK-8 Tamper-resistant time: end time is computed from server time offset + monotonic clock; changing the device clock must not shorten a lock.

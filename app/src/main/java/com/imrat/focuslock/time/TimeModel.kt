@@ -5,7 +5,7 @@ package com.imrat.focuslock.time
  * serverNow = anchorWall + offset + (elapsedNow - anchorElapsed).
  */
 object TimeModel {
-    const val MAX_SESSION_MS = 12L * 60 * 60 * 1000 // LOCK-5
+    const val MAX_SESSION_MS = 24L * 60 * 60 * 1000 // LOCK-5 (24 h, user decision T14)
 
     fun serverNow(offsetMs: Long, anchorElapsedMs: Long, anchorWallMs: Long, elapsedNowMs: Long): Long =
         anchorWallMs + offsetMs + (elapsedNowMs - anchorElapsedMs)

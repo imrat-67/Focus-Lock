@@ -112,7 +112,7 @@ service cloud.firestore {
             && d.kind in ['instant', 'scheduled']
             && d.status in ['pending', 'active']
             && d.startAt is number && d.endAt is number
-            && d.endAt > d.startAt && d.endAt - d.startAt <= 43200000      // LOCK-5: max 12 h
+            && d.endAt > d.startAt && d.endAt - d.startAt <= 86400000      // LOCK-5: max 24 h
             && d.endAt > request.time.toMillis()
             && d.remoteInstant is bool
             && (!('packages' in d) || (d.packages is list && d.packages.size() <= 500))

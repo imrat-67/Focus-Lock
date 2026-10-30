@@ -5,7 +5,7 @@ D02 · Remote lock via Firestore snapshot listeners in a foreground service, no 
 D03 · Lock UI = full-screen LockActivity launched by Accessibility service, not a plain overlay · overlays unreliable on Android 12+
 D04 · Password: generated on Observer phone, only salted PBKDF2 hash on User phone, 5 tries → 10 min cooldown · Observer-only secrecy; slows brute force
 D05 · Self-lock has no password; Emergency exit = 5-min countdown · prevents being trapped when no Observer
-D06 · Max session 12 h · limits Observer abuse / mistakes
+D06 · Max session 12 h (superseded by D25: 24 h) · limits Observer abuse / mistakes
 D07 · `links/{userUid}` doc id = User uid · enforces one Observer per User in data model
 D08 · Recurring schedules: Observer phone pre-generates 14 occurrence password hashes · password per session without Observer being online at start
 D09 · One account = one phone · simplifies device model
@@ -26,3 +26,5 @@ D23 · Emulator allowed for dev testing (AVD fl35, Android 35 default x86_64, -m
 D24 · Alarm exemption is a heuristic: clock-app packages + class name containing "alert"/"ring". Emergency buttons try ACTION_CALL, fall back to ACTION_DIAL; 30 s dialer grace after tap. Debug-only DebugSessionReceiver (src/debug) injects test sessions via adb.
 
 D24 · Overlay permission (SYSTEM_ALERT_WINDOW) added to checklist: only to exempt the lock Activity from background-start limits (vivo showed delayed lock screen after Home). No overlay windows are drawn. Backup ForegroundWatcher polls UsageStats every 500 ms during an active lock (screen on) in case accessibility events are late.
+## D25 (T14) Max lock 24 h
+User chose a 24 h cap (was 12 h). Changed TimeModel.MAX_SESSION_MS, firestore.rules LOCK-5 check, SRS LOCK-5. Rules must be redeployed.

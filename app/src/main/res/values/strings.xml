@@ -83,7 +83,7 @@
     <string name="sched_once">One time</string>
     <string name="sched_from">From</string>
     <string name="sched_to">To</string>
-    <string name="sched_rules">Longest lock is 12 hours. If the end time is earlier than the start, it ends the next day.</string>
+    <string name="sched_rules">Longest lock is 24 hours. If the end time is earlier than the start, it ends the next day.</string>
     <string name="perm_overlay">Display over other apps</string>
     <string name="perm_overlay_why">Lets the lock screen open instantly when you press Home or switch apps. Without it some phones delay the lock screen.</string>
     <string name="links_open">Devices &amp; Observer</string>
@@ -164,4 +164,7 @@
     <string name="h_schedule">Schedule lock</string>
     <string name="h_schedule_sub">Lock automatically on chosen days</string>
     <string name="h_request_pending">Request from %1$s</string>
+    <string name="lock_hours">Hours</string>
+    <string name="lock_minutes">Minutes</string>
+    <string name="lock_time_invalid">Pick at least 1 minute and at most 24 hours.</string>
 </resources>

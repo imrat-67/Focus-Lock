@@ -14,7 +14,7 @@ class SessionPlanTest {
         val s = mk()
         assertEquals(1_060_000L, s.endAtServerMs); assertEquals(65_000L, s.endElapsedMs); assertEquals(60_000L, s.lastRemainingMs)
     }
-    @Test fun buildCapsAt12h() = assertEquals(TimeModel.MAX_SESSION_MS, mk(dur = TimeModel.MAX_SESSION_MS * 2).lastRemainingMs)
+    @Test fun buildCapsAtMax() = assertEquals(TimeModel.MAX_SESSION_MS, mk(dur = TimeModel.MAX_SESSION_MS * 2).lastRemainingMs)
     @Test fun rebaseSyncedUsesServerTime() {
         val r = SessionPlan.rebaseAfterBoot(listOf(mk()), serverNowMs = 1_030_000, elapsedNowMs = 2_000, synced = true)
         assertEquals(32_000L, r.single().endElapsedMs); assertEquals(30_000L, r.single().lastRemainingMs)
