@@ -22,5 +22,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T15 user feedback #2. Done+built: d unlink wording, e device name on request, b app icons, c permissions redesign (READ_PHONE_STATE removed), f Formats+Schedules screens restyled (AppScreen, cards, sticky bottom button). Plan: [~] a logo: show 3-4 options in chat, user picks, then adaptive icon (res/mipmap-anydpi-v26 + drawable vector) [ ] g SRS/README sweep, unit tests, install on vivo, push
-Files: res/drawable ic_launcher_*, res/mipmap-anydpi-v26, SRS.md, README.md
+Task: T15 user feedback #2. Done+built+92 unit tests green: d,e,b,c,f, SRS UI-2 updated. Logo options A-D shown to user in chat; WAITING for pick. Left: [ ] a apply chosen logo as adaptive icon (res/drawable ic_launcher_fg/bg xml + res/mipmap-anydpi-v26/ic_launcher.xml, manifest android:icon/roundIcon) [ ] g install on vivo when phone connected, push

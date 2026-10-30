@@ -78,7 +78,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 
 ### UI
 - UI-1 Screens: Sign-in · Home (devices + requests) · Add Device · Device detail (lock now, schedules, app lists) · Lock screen · Permissions checklist.
-- UI-2 First-run permissions checklist: Accessibility, Device Admin, Notifications, Exact alarms, Battery-optimization exemption, Usage access, Phone state/Call, Display-over-apps if needed. Each shows granted/missing with a button.
+- UI-2 First-run permissions checklist: Accessibility, Device Admin, Notifications, Exact alarms, Battery-optimization exemption, Usage access, Display-over-apps. Only permissions the app really uses (no phone-state permission; call exemption uses AudioManager mode). Grouped cards with granted/missing and a button.
 - UI-3 Simple, clean, Material 3; dark mode follows system.
 
 ## 4. Non-functional

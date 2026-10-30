@@ -1,13 +1,14 @@
 # NEXT (rewrite after every finished task)
 
-## Do now: finish T14
-User device-tests T14g on vivo (debug build installed). Apply any feedback, then mark T14 DONE, README sweep, push.
-Then T13 leftovers: release SHA-1 in Firebase, release device pass, GitHub Release.
-
 ## USER ACTION NEEDED
-Test on vivo: (1) send link request from 2nd account -> heads-up notification + red dot on profile icon (allow Notifications permission; new channel alerts_v2) (2) Apps lock from Instant lock does NOT cover Focus Lock, toast shows (3) status pill: Full lock / Selected apps locked (4) default 1 min (5) one-time schedule shows calendar.
-Back up ~/focuslock-keys/release.jks + keystore.properties.
+1. Pick logo A, B, C or D (shown in chat). Then apply as adaptive icon, build, push.
+2. Connect vivo via USB (debugging on) so the T15 build can be installed; re-enable Accessibility after install.
+3. Send the screenshots of the lower parts of pages (not received) if Formats/Schedules/Remote look off.
+
+## Do now: T15 finish
+Apply chosen logo -> res/mipmap-anydpi-v26/ic_launcher.xml (+vector drawables), manifest icon. ./gradlew assembleDebug testDebugUnitTest, install, then mark T15 DONE, push.
+Then T14 close-out and T13 leftovers (release SHA-1 in Firebase, release pass, GitHub Release).
 
 ## Notes
-- adb: ~/Android/Sdk/platform-tools/adb. After reinstall re-enable Accessibility.
+- adb: ~/Android/Sdk/platform-tools/adb. Env: ANDROID_HOME=~/Android/Sdk JAVA_HOME=~/tools/jdk-21.0.13+9
 - Rules tests: cd rules-tests; export JAVA_HOME=~/tools/jdk-21.0.13+9; NODE_ENV=development npm i --include=dev; npm test.
