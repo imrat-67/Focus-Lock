@@ -52,6 +52,24 @@ class SessionEngine(ctx: Context) {
         return s
     }
 
+    /** Starts a session an Observer made for this phone (UNL-1, NOT-2). Idempotent: known ids are skipped. */
+    @Synchronized
+    fun startRemote(s: LockSession): LocalSession? {
+        val srv = clock.now()
+        val el = SystemClock.elapsedRealtime()
+        if (s.endAtMs <= srv || store.load().any { it.id == s.id }) return null
+        val local = SessionPlan.build(s.id, s.createdBy, s.mode, s.packages, s.endAtMs - srv, srv, el, s.pwHash, s.pwSalt)
+        store.save(SessionPlan.prune(store.load(), el) + local)
+        scheduleEnd(local)
+        return local
+    }
+
+    /** Observer ended it on the server: drop it from the local cache so the lock lifts. */
+    @Synchronized
+    fun endLocal(id: String) = store.remove(id)
+
+    fun localIds(): Set<String> = store.load().map { it.id }.toSet()
+
     /**
      * Starts the occurrence [p] of [sch] if it is running now and was never started before (idempotent, SCH-3).
      * Ends at the occurrence end. Only the creator's own phone-side schedule is uploaded (rules: createdBy == auth uid).

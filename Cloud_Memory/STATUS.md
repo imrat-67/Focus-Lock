@@ -21,8 +21,8 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 ## CHECKPOINT (live; overwrite before each step)
 Task: T10 core = remote instant lock + Observer unlock + 1-min warning (UNL-1, NOT-2). Later T10b: NOT-1 (10-min pre-start), NOT-3 (request alerts), Observer cancel of schedule-made sessions (SCH-4), remote schedules UI.
 Plan/steps:
-[ ] a) pure RemoteSync.plan + tests (data/RemoteSync.kt)
-[ ] b) SessionRepository.observeLive + SessionEngine.startRemote/endLocal
+[x] a) pure RemoteSync.plan + tests (data/RemoteSync.kt)
+[x] b) SessionRepository.observeLive + SessionEngine.startRemote/endLocal
 [ ] c) CoreService: listen to own sessions -> warning notif, delayed local start, local end when server says ended
 [ ] d) Observer UI: RemoteDevice screen (Lock now via LockNowScreen, Formats, Unlock list) opened from Links people list
 [ ] e) build + tests + install; commit each step

@@ -1,6 +1,9 @@
 package com.imrat.focuslock.data
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 /** `users/{uid}/sessions/{sid}`. Rules decide who may write what; see firestore.rules. */
@@ -14,6 +17,11 @@ class SessionRepository(private val db: FirebaseFirestore) {
         ref.set(session.toCreateMap()).await()
         return ref.id
     }
+
+    /** Live sessions of [userUid] that have not yet passed their end time at [sinceMs]. */
+    fun observeLive(userUid: String, sinceMs: Long): Flow<List<LockSession>> =
+        col(userUid).whereGreaterThan("endAt", sinceMs).snapshots()
+            .map { snap -> snap.documents.mapNotNull { d -> d.data?.let { LockSession.fromMap(d.id, it) } } }
 
     fun newId(userUid: String): String = col(userUid).document().id
 

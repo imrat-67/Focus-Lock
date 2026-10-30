@@ -31,6 +31,8 @@ class CoreService : Service() {
     private var heartbeat: kotlinx.coroutines.Job? = null
     private var scheduleJob: kotlinx.coroutines.Job? = null
     private var watcherJob: kotlinx.coroutines.Job? = null
+    private var remoteJob: kotlinx.coroutines.Job? = null
+    private val pendingStarts = mutableMapOf<String, kotlinx.coroutines.Job>()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -58,6 +60,7 @@ class CoreService : Service() {
         val scheduler = ScheduleScheduler(this)
         scheduler.rearm()
         if (scheduleJob == null) scheduleJob = scope.launch { watchSchedules(scheduler) }
+        if (remoteJob == null) remoteJob = scope.launch { watchRemote(engine) }
         if (watcherJob == null) {
             val watcher = com.imrat.focuslock.lock.ForegroundWatcher(this, com.imrat.focuslock.lock.SessionCache(this))
             watcherJob = scope.launch { while (true) { delay(runCatching { watcher.step() }.getOrDefault(3_000L)) } }
@@ -89,6 +92,53 @@ class CoreService : Service() {
             }
             delay(60_000) // not signed in yet, or listener failed: retry
         }
+    }
+
+    /**
+     * Mirrors sessions an Observer made for this phone: 1-minute warning, delayed local start, local end when the
+     * Observer unlocks (UNL-1, NOT-2). Needs the phone to be online; enforcement itself stays local.
+     */
+    private suspend fun watchRemote(engine: SessionEngine) {
+        val repo = com.imrat.focuslock.data.SessionRepository(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+        while (true) {
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                runCatching {
+                    repo.observeLive(uid, engine.clock.now() - 60_000).collect { list ->
+                        val plan = com.imrat.focuslock.data.RemoteSync.plan(list, engine.localIds(), uid, engine.clock.now())
+                        plan.endIds.forEach { engine.endLocal(it) }
+                        val wanted = plan.starts.map { it.session.id }.toSet()
+                        pendingStarts.filterKeys { it !in wanted }.forEach { (id, job) -> job.cancel(); pendingStarts.remove(id) }
+                        plan.starts.filter { it.session.id !in pendingStarts }.forEach { st ->
+                            pendingStarts[st.session.id] = scope.launch { startAfterWarning(engine, st) }
+                        }
+                    }
+                }.onFailure { Log.w("CoreService", "session listener: ${it.message}") }
+            }
+            delay(60_000)
+        }
+    }
+
+    private suspend fun startAfterWarning(engine: SessionEngine, st: com.imrat.focuslock.data.RemoteSync.Start) {
+        if (st.delayMs > 0) warn()
+        delay(st.delayMs)
+        if (engine.startRemote(st.session) != null) {
+            runCatching { startActivity(com.imrat.focuslock.lock.LockActivity.intent(this)) }
+        }
+        pendingStarts.remove(st.session.id)
+    }
+
+    private fun warn() {
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.createNotificationChannel(NotificationChannel("warn", getString(R.string.warn_channel), NotificationManager.IMPORTANCE_HIGH))
+        val n = NotificationCompat.Builder(this, "warn")
+            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setContentTitle(getString(R.string.rwarn_title))
+            .setContentText(getString(R.string.rwarn_body))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        runCatching { nm.notify(2, n) }
     }
 
     private fun buildNotification(): Notification {

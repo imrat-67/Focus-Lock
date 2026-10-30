@@ -110,4 +110,6 @@
     <string name="links_unknown_person">Someone</string>
     <string name="links_error">Something went wrong. Check your connection and try again.</string>
     <string name="back">Back</string>
+    <string name="rwarn_title">Your phone is about to be locked</string>
+    <string name="rwarn_body">Your Observer started a lock. It begins in 1 minute. Contact them if this is a mistake.</string>
 </resources>
