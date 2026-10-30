@@ -19,4 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none (T07 not started)
+Task: T07
+Plan/steps: [ ] a) data/Apps.kt (AppEntry, codec, normalize, Format) + tests · [ ] b) AppListRepository + FormatRepository · [ ] c) InstalledApps + AppListSync in CoreService (on start + package add/remove) · [ ] d) AppPicker + FormatsScreen + Home button · [ ] e) build, test on emulator
+Files touched: app/src/main/** (data/, lock/, service/CoreService.kt, ui/, MainActivity), AndroidManifest.xml (queries), strings.xml, tests
+Last commit: see git log
