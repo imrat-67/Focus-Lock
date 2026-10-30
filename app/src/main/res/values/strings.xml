@@ -120,4 +120,9 @@
     <string name="remote_unlock">Unlock now</string>
     <string name="remote_unlock_note">Unlocking needs their phone to be online.</string>
     <string name="links_manage">Manage</string>
+    <string name="alert_channel">Requests</string>
+    <string name="alert_request_title">New Observer request</string>
+    <string name="alert_request_body">Someone wants to be your Observer. Open Focus Lock to answer.</string>
+    <string name="alert_removal_title">Release request</string>
+    <string name="alert_removal_body">Someone you observe asks to be released. Open Focus Lock to answer.</string>
 </resources>

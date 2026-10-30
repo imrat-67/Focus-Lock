@@ -14,16 +14,13 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T08 Instant + Scheduled locks, alarms, timer, boot rebase, ServerClock; Lock now VERIFIED on vivo (needed overlay perm D24 + re-cover on stop); reboot/clock-tamper/scheduled-start/notice NOT yet device-tested -> T13 pass
 - [x] T09 Links screen (request by email/code, accept/decline, removal + 7-day auto, LINK-7 lock guard) + LinkRules tests (3); installed on vivo; request/accept CONFIRMED working by user, 'My Device' vs 'Remote Device' chooser deferred to T10
 - [x] T10 Remote instant lock + Observer unlock + 1-min warning: RemoteSync (4 tests), CoreService session listener, RemoteDeviceScreen (lock now, formats, unlock list); CONFIRMED working by user on devices. NOT-1 10-min warning already existed from T08
-- [ ] T10b NOT-3 link/removal request local notifications; Observer cancel of schedule-made sessions (SCH-4); remote schedules UI; LINK-7 guard on Observer Release
+- [~] T10b NOT-3 DONE (LinkAlerts + 3 tests, installed, not yet seen on device); remaining: Observer cancel of schedule-made sessions (SCH-4); remote schedules UI; LINK-7 guard on Observer Release
 - [ ] T11 Emergency password (hash, cooldown, pool, regenerate) + self-lock emergency exit (UNL-2..7)
 - [ ] T12 Hardening: Device Admin, block sensitive Settings screens, sign-out guard (SEC-1,2, AUTH-3)
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T10b step 1 = NOT-3 request alerts
-Plan/steps:
-[ ] a) pure LinkAlerts.plan(myLink, people, seen) + tests
-[ ] b) CoreService: listen own link + observer's list, local notification once per state, seen keys in prefs
-[ ] c) build, install, commit
+Task: T10b remaining (SCH-4 Observer cancel of schedule-made sessions, remote schedules UI, LINK-7 guard on Release)
+Plan/steps: [ ] a) read SchedulesScreen/ScheduleRepository + decide minimal approach
 Files touched: none yet
 Last commit: see git log

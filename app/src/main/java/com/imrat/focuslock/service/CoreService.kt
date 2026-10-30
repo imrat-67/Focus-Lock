@@ -32,6 +32,7 @@ class CoreService : Service() {
     private var scheduleJob: kotlinx.coroutines.Job? = null
     private var watcherJob: kotlinx.coroutines.Job? = null
     private var remoteJob: kotlinx.coroutines.Job? = null
+    private var alertJob: kotlinx.coroutines.Job? = null
     private val pendingStarts = mutableMapOf<String, kotlinx.coroutines.Job>()
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -61,6 +62,7 @@ class CoreService : Service() {
         scheduler.rearm()
         if (scheduleJob == null) scheduleJob = scope.launch { watchSchedules(scheduler) }
         if (remoteJob == null) remoteJob = scope.launch { watchRemote(engine) }
+        if (alertJob == null) alertJob = scope.launch { watchLinkAlerts() }
         if (watcherJob == null) {
             val watcher = com.imrat.focuslock.lock.ForegroundWatcher(this, com.imrat.focuslock.lock.SessionCache(this))
             watcherJob = scope.launch { while (true) { delay(runCatching { watcher.step() }.getOrDefault(3_000L)) } }
@@ -117,6 +119,43 @@ class CoreService : Service() {
             }
             delay(60_000)
         }
+    }
+
+    /** NOT-3: local notification when a link request or a removal request arrives. Each event once. */
+    private suspend fun watchLinkAlerts() {
+        val repo = com.imrat.focuslock.data.LinkRepository(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+        val prefs = getSharedPreferences("link_alerts", Context.MODE_PRIVATE)
+        while (true) {
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                runCatching {
+                    kotlinx.coroutines.flow.combine(repo.observe(uid), repo.observeUsersOf(uid)) { mine, people -> mine to people }
+                        .collect { (mine, people) ->
+                            val seen = prefs.getStringSet("seen", emptySet()).orEmpty()
+                            val r = com.imrat.focuslock.data.LinkAlerts.plan(mine, people, seen)
+                            r.fresh.forEach { notifyAlert(it) }
+                            prefs.edit().putStringSet("seen", r.currentKeys).apply()
+                        }
+                }.onFailure { Log.w("CoreService", "link alerts: ${it.message}") }
+            }
+            delay(60_000)
+        }
+    }
+
+    private fun notifyAlert(a: com.imrat.focuslock.data.LinkAlerts.Alert) {
+        if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) return
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.createNotificationChannel(NotificationChannel("alerts", getString(R.string.alert_channel), NotificationManager.IMPORTANCE_DEFAULT))
+        val request = a.kind == com.imrat.focuslock.data.LinkAlerts.Kind.NEW_REQUEST
+        val open = android.app.PendingIntent.getActivity(this, 1, Intent(this, MainActivity::class.java), android.app.PendingIntent.FLAG_IMMUTABLE)
+        val n = NotificationCompat.Builder(this, "alerts")
+            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setContentTitle(getString(if (request) R.string.alert_request_title else R.string.alert_removal_title))
+            .setContentText(getString(if (request) R.string.alert_request_body else R.string.alert_removal_body))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        runCatching { nm.notify(a.key.hashCode(), n) }
     }
 
     private suspend fun startAfterWarning(engine: SessionEngine, st: com.imrat.focuslock.data.RemoteSync.Start) {
