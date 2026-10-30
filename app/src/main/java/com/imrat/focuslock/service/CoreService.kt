@@ -8,6 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.IBinder
+import android.util.Log
+import com.imrat.focuslock.security.KeystoreBox
+import com.imrat.focuslock.security.SessionStore
+import java.io.File
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.imrat.focuslock.MainActivity
@@ -23,7 +27,16 @@ class CoreService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        restoreSessions()
         return START_STICKY
+    }
+
+    /** Loads the encrypted session cache (creates it empty on first run). Enforcement hooks in during T06/T08. */
+    private fun restoreSessions() {
+        val file = File(filesDir, "sessions.bin")
+        val store = SessionStore(file, KeystoreBox.create())
+        if (!file.exists()) store.save(emptyList())
+        Log.i("CoreService", "restored ${store.load().size} session(s)")
     }
 
     private fun buildNotification(): Notification {

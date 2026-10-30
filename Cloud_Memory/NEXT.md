@@ -1,9 +1,10 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- None. Phone paired via Wireless debugging (re-pair via Developer options if `adb devices` is empty). Sign-in works on device.
+- `adb devices` is EMPTY. Re-pair the phone (Developer options > Wireless debugging, or plug USB) so T05 can be verified on device.
 
-## Do now: T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
+## Do now: finish T05 step d2 (build+tests already pass): `./gradlew installDebug`, open app, check permissions checklist + CoreService log (`adb logcat -s CoreService`), then mark T05 DONE.
+## Original T05 plan Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 1. Read SRS UI-2, LOCK-6,7 and docs/ARCHITECTURE.md "Runtime pieces".
 2. Permissions screen: accessibility, overlay/notifications, exact alarms, device admin status checks (no enforcement yet).
 3. CoreService (foreground, silent notification) skeleton; SessionStore (encrypted local cache) with unit tests for pure parts.
