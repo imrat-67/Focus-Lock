@@ -82,87 +82,88 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
             val live by remember(targetUid) { container.sessions.observeLive(targetUid, clock.now()) }
                 .collectAsStateWithLifecycle(emptyList())
             val fmt = remember { java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT) }
-            Column(Modifier.fillMaxSize().systemBarsPadding().padding(16.dp).verticalScroll(rememberScrollState())) {
-                Text(stringResource(R.string.remote_title, name), style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(16.dp))
-                Button(onClick = { page = RemotePage.LOCK }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.remote_lock_now)) }
+            var pwTick by remember { mutableIntStateOf(0) }
+            LaunchedEffect(live) { // finished sessions no longer need their password
+                live.filter { it.status == SessionStatus.ENDED || it.passwordUsed }.forEach { container.vault.remove(it.id) }
+            }
+            val running = live.filter { it.status != SessionStatus.ENDED && !it.passwordUsed }
+            val lockedNow = running.any { it.startAtMs <= clock.now() && it.endAtMs > clock.now() }
+            AppScreen(name, onBack, actions = { StatusPill(lockedNow); Spacer(Modifier.padding(end = 12.dp)) }) {
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = { page = RemotePage.FORMATS }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.formats_open)) }
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = { page = RemotePage.SCHEDULES }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.sched_open)) }
-                Spacer(Modifier.height(24.dp))
-                Text(stringResource(R.string.remote_sessions), style = MaterialTheme.typography.titleMedium)
-                var pwTick by remember { mutableIntStateOf(0) }
-                LaunchedEffect(live) { // finished sessions no longer need their password
-                    live.filter { it.status == SessionStatus.ENDED || it.passwordUsed }.forEach { container.vault.remove(it.id) }
+                FLCard(Modifier.padding(bottom = 12.dp), onClick = { page = RemotePage.LOCK }) {
+                    Text(stringResource(R.string.h_instant), style = MaterialTheme.typography.titleMedium)
+                    Subtle(stringResource(R.string.h_instant_sub))
                 }
-                val running = live.filter { it.status != SessionStatus.ENDED && !it.passwordUsed }
-                if (running.isEmpty()) Text(stringResource(R.string.remote_none))
+                FLCard(Modifier.padding(bottom = 12.dp), onClick = { page = RemotePage.SCHEDULES }) {
+                    Text(stringResource(R.string.h_schedule), style = MaterialTheme.typography.titleMedium)
+                    Subtle(stringResource(R.string.h_schedule_sub))
+                }
+                FLCard(onClick = { page = RemotePage.FORMATS }) { Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium) }
+
+                SectionLabel(stringResource(R.string.remote_sessions))
+                if (running.isEmpty()) Subtle(stringResource(R.string.remote_none))
                 running.forEach { s ->
-                    Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                    FLCard(Modifier.padding(bottom = 12.dp)) {
                         val modeName = stringResource(if (s.mode == LockMode.FULL) R.string.mode_full else R.string.mode_apps)
-                        Text(
-                            stringResource(R.string.remote_session_line, modeName, fmt.format(java.util.Date(s.endAtMs))),
-                            Modifier.weight(1f),
-                        )
-                        OutlinedButton(onClick = {
-                            scope.launch { runCatching { container.sessions.endByObserver(targetUid, s.id, myUid) } }
-                        }) { Text(stringResource(R.string.remote_unlock)) }
-                    }
-                    if (s.createdBy == myUid && s.pwHash != null) {
-                        val pw = remember(s.id, pwTick, s.pwHash) { container.vault.get(s.id) }
-                        if (pw == null) {
-                            Text(stringResource(R.string.remote_pw_missing), style = MaterialTheme.typography.bodySmall)
-                        } else {
-                            Text(stringResource(R.string.remote_pw_label, pw), style = MaterialTheme.typography.titleMedium)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                OutlinedButton(onClick = {
-                                    val cm = ctx.getSystemService(ClipboardManager::class.java)
-                                    cm.setPrimaryClip(ClipData.newPlainText("password", pw))
-                                }) { Text(stringResource(R.string.remote_pw_copy)) }
-                                OutlinedButton(onClick = {
-                                    scope.launch {
-                                        val f = withContext(Dispatchers.Default) { PasswordCrypto.fresh() }
-                                        // server first: if it fails nothing changed; then keep the new plaintext (UNL-5)
-                                        val ok = runCatching { container.sessions.regenerate(targetUid, s.id, f.hash, f.salt) }.isSuccess
-                                        if (ok) { container.vault.put(s.id, f.plain); pwTick++ }
-                                    }
-                                }) { Text(stringResource(R.string.remote_pw_regen)) }
+                        Text(stringResource(R.string.remote_session_line, modeName, fmt.format(java.util.Date(s.endAtMs))), style = MaterialTheme.typography.titleMedium)
+                        if (s.createdBy == myUid && s.pwHash != null) {
+                            val pw = remember(s.id, pwTick, s.pwHash) { container.vault.get(s.id) }
+                            Spacer(Modifier.height(8.dp))
+                            if (pw == null) {
+                                Subtle(stringResource(R.string.remote_pw_missing))
+                            } else {
+                                Text(stringResource(R.string.remote_pw_label, pw), style = MaterialTheme.typography.headlineSmall)
+                                Spacer(Modifier.height(8.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    SecondaryButton(stringResource(R.string.remote_pw_copy), {
+                                        ctx.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("password", pw))
+                                    }, Modifier.weight(1f))
+                                    SecondaryButton(stringResource(R.string.remote_pw_regen), {
+                                        scope.launch {
+                                            val f = withContext(Dispatchers.Default) { PasswordCrypto.fresh() }
+                                            // server first: if it fails nothing changed; then keep the new plaintext (UNL-5)
+                                            val ok = runCatching { container.sessions.regenerate(targetUid, s.id, f.hash, f.salt) }.isSuccess
+                                            if (ok) { container.vault.put(s.id, f.plain); pwTick++ }
+                                        }
+                                    }, Modifier.weight(1f))
+                                }
                             }
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(10.dp))
+                        PrimaryButton(stringResource(R.string.remote_unlock), {
+                            scope.launch { runCatching { container.sessions.endByObserver(targetUid, s.id, myUid) } }
+                        })
                     }
                 }
+
                 val scheds by remember(targetUid) { container.schedules.observe(targetUid) }.collectAsStateWithLifecycle(emptyList())
                 val mine = scheds.filter { it.createdBy == myUid && it.enabled && it.isUsable() }
                 LaunchedEffect(scheds) { // UNL-6: refill passwords whenever the Observer looks at this device
                     scheds.forEach { s -> runCatching { container.poolTopUp.topUp(targetUid, myUid, s) } }
                 }
                 if (mine.isNotEmpty()) {
-                    Spacer(Modifier.height(16.dp))
-                    Text(stringResource(R.string.remote_sched_pw), style = MaterialTheme.typography.titleMedium)
+                    SectionLabel(stringResource(R.string.remote_sched_pw))
                     val dt = remember { java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT) }
                     mine.forEach { s ->
                         val next = com.imrat.focuslock.lock.SchedulePool.upcoming(s, clock.now()).firstOrNull() ?: return@forEach
                         val pw = remember(s.pwPool, next) { container.vault.get(com.imrat.focuslock.lock.SchedulePool.vaultKey(s.id, next)) }
                         val ready = pw != null && s.pwPool[next.toString()] != null
-                        Text(dt.format(java.util.Date(next)), Modifier.padding(top = 6.dp))
-                        if (!ready) {
-                            Text(stringResource(R.string.remote_sched_pw_missing), style = MaterialTheme.typography.bodySmall)
-                        } else {
-                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(stringResource(R.string.remote_pw_label, pw ?: ""), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                                OutlinedButton(onClick = {
-                                    val cm = ctx.getSystemService(ClipboardManager::class.java)
-                                    cm.setPrimaryClip(ClipData.newPlainText("password", pw))
-                                }) { Text(stringResource(R.string.remote_pw_copy)) }
+                        FLCard(Modifier.padding(bottom = 12.dp)) {
+                            Subtle(dt.format(java.util.Date(next)))
+                            if (!ready) {
+                                Subtle(stringResource(R.string.remote_sched_pw_missing))
+                            } else {
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Text(stringResource(R.string.remote_pw_label, pw ?: ""), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+                                    SecondaryButton(stringResource(R.string.remote_pw_copy), {
+                                        ctx.getSystemService(ClipboardManager::class.java).setPrimaryClip(ClipData.newPlainText("password", pw))
+                                    }, Modifier.weight(1f))
+                                }
                             }
                         }
                     }
                 }
-                Text(stringResource(R.string.remote_unlock_note), style = MaterialTheme.typography.bodySmall)
-                Spacer(Modifier.height(24.dp))
-                OutlinedButton(onClick = onBack) { Text(stringResource(R.string.back)) }
+                Subtle(stringResource(R.string.remote_unlock_note), Modifier.padding(vertical = 12.dp))
             }
         }
     }
