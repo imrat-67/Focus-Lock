@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none active.
-Plan/steps: —
-Files touched: —
+Task: T04 (started; boot verified, git clean at 83e44e9)
+Plan/steps: [ ] a) read ARCHITECTURE (data model + rules) · [ ] b) deps + versions check · [ ] c) models/repos + sign-in screen · [ ] d) firestore.rules + emulator tests · [ ] e) deploy rules · [ ] f) build + unit tests
+Files touched: (none yet) app/build.gradle.kts, gradle/libs*, app/src/main/**, firestore.rules, rules tests
 Last commit: see git log
