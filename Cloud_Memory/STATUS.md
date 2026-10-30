@@ -22,4 +22,6 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T14 REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T13 remaining. DONE: release SHA-1, release APK installed on vivo, release sign-in CONFIRMED by user. NOW: device pass on release (1 Lock now+back/home, 2 reboot, 3 clock change, 4 scheduled start, 5 SEC-2); then GitHub Release (user uploads APK, tag v0.1.0). Files: none.
+Task: T14. User ANSWERS: (1) self-lock w/o observer = timer only, max 24h; observer can unlock by password/direct. (2) Full lock: re-cover Home/Recents in ~0.2s; app-lock mode leaves Home free. (3) hour+minute wheel pickers. (4) Home nearly empty; top-right profile icon -> sheet (friend code, incoming requests, permissions, sign out). (5) Testing: emulator=Observer, vivo=User, user signs in on emulator once (option a). Design: dark-first navy + violet accent, light/dark by system, status dots.
+Steps: [ ] a theme  [ ] b Home+AddDevice+My/Remote flow  [ ] c device page + status  [ ] d picker  [ ] e lock fixes  [ ] f emulator test
+Files: ui/*, MainActivity.kt, lock/LockActivity.kt, service/LockAccessibilityService.kt
