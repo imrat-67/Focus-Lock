@@ -22,6 +22,8 @@ data class LocalSession(
     val cooldownUntilElapsedMs: Long = 0L,
     /** Last persisted remaining time; floor used when rebasing after reboot while offline (LOCK-8). */
     val lastRemainingMs: Long = 0L,
+    /** UNL-7: when the 5-minute emergency-exit countdown ends (monotonic clock); 0 = not started. */
+    val exitAtElapsedMs: Long = 0L,
 )
 
 internal object SessionCodec {
@@ -34,7 +36,7 @@ internal object SessionCodec {
                     .put("pkgs", JSONArray(s.packages))
                     .put("endSrv", s.endAtServerMs).put("endEl", s.endElapsedMs)
                     .put("h", s.pwHash ?: JSONObject.NULL).put("s", s.pwSalt ?: JSONObject.NULL)
-                    .put("fails", s.failedAttempts).put("cool", s.cooldownUntilElapsedMs).put("rem", s.lastRemainingMs)
+                    .put("fails", s.failedAttempts).put("cool", s.cooldownUntilElapsedMs).put("rem", s.lastRemainingMs).put("exit", s.exitAtElapsedMs)
             )
         }
         return JSONObject().put("v", 1).put("sessions", arr).toString().toByteArray(Charsets.UTF_8)
@@ -57,6 +59,7 @@ internal object SessionCodec {
                 failedAttempts = o.getInt("fails"),
                 cooldownUntilElapsedMs = o.getLong("cool"),
                 lastRemainingMs = o.optLong("rem", 0L),
+                exitAtElapsedMs = o.optLong("exit", 0L),
             )
         }
     } catch (_: org.json.JSONException) {

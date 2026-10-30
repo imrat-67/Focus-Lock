@@ -23,7 +23,7 @@ object SessionPlan {
     fun rebaseAfterBoot(list: List<LocalSession>, serverNowMs: Long, elapsedNowMs: Long, synced: Boolean): List<LocalSession> =
         list.map { s ->
             val end = TimeModel.rebaseAfterBoot(s.endAtServerMs, serverNowMs, s.lastRemainingMs, elapsedNowMs, synced)
-            s.copy(endElapsedMs = end, lastRemainingMs = TimeModel.remainingMs(end, elapsedNowMs), cooldownUntilElapsedMs = 0L)
+            UnlockPolicy.afterBoot(s.copy(endElapsedMs = end, lastRemainingMs = TimeModel.remainingMs(end, elapsedNowMs)), elapsedNowMs)
         }.filter { it.endElapsedMs > elapsedNowMs }
 
     /** After a successful server sync: re-derive ends from server time. Keeps cooldowns. Drops expired. */
