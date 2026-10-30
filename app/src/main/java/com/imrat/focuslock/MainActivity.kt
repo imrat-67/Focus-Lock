@@ -34,6 +34,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.imrat.focuslock.ui.AuthUiState
 import com.imrat.focuslock.ui.AuthViewModel
 import com.imrat.focuslock.ui.HomeScreen
+import com.imrat.focuslock.ui.AddDeviceScreen
+import com.imrat.focuslock.ui.AddRemoteScreen
+import com.imrat.focuslock.ui.ThisDeviceScreen
+import com.imrat.focuslock.data.DeviceStore
+import androidx.compose.runtime.remember
 import com.imrat.focuslock.ui.FocusLockTheme
 import com.imrat.focuslock.ui.LoadingScreen
 import com.imrat.focuslock.security.Perms
@@ -60,12 +65,10 @@ class MainActivity : ComponentActivity() {
                         is AuthUiState.SignedOut -> SignInScreen(s.errorRes) { vm.signIn(this) }
                         is AuthUiState.Ready -> {
                             LaunchedEffect(Unit) { CoreService.start(this@MainActivity) }
-                            var showFormats by rememberSaveable { mutableStateOf(false) }
-                            var showLockNow by rememberSaveable { mutableStateOf(false) }
-                            var showSchedules by rememberSaveable { mutableStateOf(false) }
-                            var showLinks by rememberSaveable { mutableStateOf(false) }
+                            var route by rememberSaveable { mutableStateOf("home") }
                             var remoteUid by rememberSaveable { mutableStateOf<String?>(null) }
                             var remoteName by rememberSaveable { mutableStateOf("") }
+                            val store = remember(s.profile.uid) { DeviceStore(this@MainActivity, s.profile.uid) }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
                             val lockActiveNow by produceState(false) { // AUTH-3: re-check every second
                                 while (true) {
@@ -73,42 +76,49 @@ class MainActivity : ComponentActivity() {
                                     kotlinx.coroutines.delay(1_000)
                                 }
                             }
+                            val uid = s.profile.uid
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
                             } else if (remoteUid != null) {
                                 BackHandler { remoteUid = null }
-                                RemoteDeviceScreen(remoteUid.orEmpty(), s.profile.uid, remoteName, container) { remoteUid = null }
-                            } else if (showLinks) {
-                                BackHandler { showLinks = false }
-                                val lockActive = SessionCache(this@MainActivity).get().any { it.endElapsedMs > SystemClock.elapsedRealtime() }
-                                LinksScreen(s.profile.uid, container.links, container.users, container.sessions, lockActive, { uid, name -> remoteUid = uid; remoteName = name }) { showLinks = false }
-                            } else if (showSchedules) {
-                                BackHandler { showSchedules = false }
-                                SchedulesScreen(s.profile.uid, apps, container.schedules, container.formats) { showSchedules = false }
-                            } else if (showLockNow) {
-                                BackHandler { showLockNow = false }
-                                LockNowScreen(s.profile.uid, apps, container.formats, { mode, pkgs, ms ->
-                                    lifecycleScope.launch {
-                                        val started = withContext(Dispatchers.IO) {
-                                            SessionEngine(this@MainActivity).startSelfInstant(s.profile.uid, mode, pkgs, ms)
+                                RemoteDeviceScreen(remoteUid.orEmpty(), uid, remoteName, container) { remoteUid = null }
+                            } else when (route) {
+                                "add" -> {
+                                    BackHandler { route = "home" }
+                                    AddDeviceScreen(store.myDevice.value, { store.setMyDevice(true); route = "home" }, { route = "addRemote" }) { route = "home" }
+                                }
+                                "addRemote" -> {
+                                    BackHandler { route = "add" }
+                                    AddRemoteScreen(uid, container, { route = "home" }) { route = "add" }
+                                }
+                                "this" -> {
+                                    BackHandler { route = "home" }
+                                    ThisDeviceScreen(lockActiveNow, { route = "instant" }, { route = "schedules" }, { route = "formats" }) { route = "home" }
+                                }
+                                "schedules" -> {
+                                    BackHandler { route = "this" }
+                                    SchedulesScreen(uid, apps, container.schedules, container.formats) { route = "this" }
+                                }
+                                "formats" -> {
+                                    BackHandler { route = "this" }
+                                    FormatsScreen(uid, uid, apps, container.formats) { route = "this" }
+                                }
+                                "instant" -> {
+                                    BackHandler { route = "this" }
+                                    LockNowScreen(uid, apps, container.formats, { mode, pkgs, ms ->
+                                        lifecycleScope.launch {
+                                            val started = withContext(Dispatchers.IO) {
+                                                SessionEngine(this@MainActivity).startSelfInstant(uid, mode, pkgs, ms)
+                                            }
+                                            route = "this"
+                                            if (started != null) startActivity(LockActivity.intent(this@MainActivity))
                                         }
-                                        showLockNow = false
-                                        if (started != null) startActivity(LockActivity.intent(this@MainActivity))
-                                    }
-                                }) { showLockNow = false }
-                            } else if (showFormats) {
-                                BackHandler { showFormats = false }
-                                FormatsScreen(s.profile.uid, s.profile.uid, apps, container.formats) { showFormats = false }
-                            } else {
-                                HomeScreen(
-                                    s.profile,
-                                    Perms.missing(this@MainActivity).size,
+                                    }) { route = "this" }
+                                }
+                                else -> HomeScreen(
+                                    s.profile, Perms.missing(this@MainActivity).size, lockActiveNow, container, store,
+                                    { route = "add" }, { route = "this" }, { u, n -> remoteUid = u; remoteName = n },
                                     { showPerms = true },
-                                    { showFormats = true },
-                                    { showLockNow = true },
-                                    { showSchedules = true },
-                                    { showLinks = true },
-                                    lockActiveNow,
                                 ) { vm.signOut(this@MainActivity) }
                             }
                         }

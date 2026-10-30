@@ -23,5 +23,5 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T14. User ANSWERS: (1) self-lock w/o observer = timer only, max 24h; observer can unlock by password/direct. (2) Full lock: re-cover Home/Recents in ~0.2s; app-lock mode leaves Home free. (3) hour+minute wheel pickers. (4) Home nearly empty; top-right profile icon -> sheet (friend code, incoming requests, permissions, sign out). (5) Testing: emulator=Observer, vivo=User, user signs in on emulator once (option a). Design: dark-first navy + violet accent, light/dark by system, status dots.
-Steps: [x] a theme (FocusLockTheme wired, material-icons-core added, debug build OK)  [ ] b Home+AddDevice+My/Remote flow  [ ] c device page + status  [ ] d picker  [ ] e lock fixes  [ ] f emulator test
-Files: ui/*, MainActivity.kt, lock/LockActivity.kt, service/LockAccessibilityService.kt
+Steps: [x] a theme (FocusLockTheme wired, material-icons-core added, debug build OK)  [x] b Home+AddDevice+My/Remote flow done, debug build OK (ui/Home.kt rows, ui/HomeScreens.kt, route nav in MainActivity; not yet device-tested)  [ ] c device page + status  [ ] d picker  [ ] e lock fixes  [ ] f emulator test
+Files: ui/Home.kt (new), ui/Screens.kt, res/values/strings.xml, ui/*, MainActivity.kt, lock/LockActivity.kt, service/LockAccessibilityService.kt
