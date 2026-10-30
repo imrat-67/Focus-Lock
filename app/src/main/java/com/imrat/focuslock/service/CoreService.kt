@@ -29,6 +29,7 @@ class CoreService : Service() {
     private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
     private var appSync: AppListSync? = null
     private var heartbeat: kotlinx.coroutines.Job? = null
+    private var scheduleJob: kotlinx.coroutines.Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -53,18 +54,35 @@ class CoreService : Service() {
         Log.i("CoreService", "restored ${store.load().size} session(s)")
         val engine = SessionEngine(this)
         engine.rearmAlarms()
+        val scheduler = ScheduleScheduler(this)
+        scheduler.rearm()
+        if (scheduleJob == null) scheduleJob = scope.launch { watchSchedules(scheduler) }
         if (heartbeat == null) {
             heartbeat = scope.launch {
                 var tick = 0
                 while (true) {
                     runCatching {
                         engine.heartbeat()
-                        if (tick % 20 == 0) engine.syncClock() // ~every 10 min, and at start
+                        if (tick % 20 == 0 && engine.syncClock()) scheduler.rearm() // ~every 10 min, and at start
                     }
                     tick++
                     delay(30_000)
                 }
             }
+        }
+    }
+
+    /** Mirrors this user's schedules (own + Observer-created) into the local cache and re-arms alarms (SCH-3). */
+    private suspend fun watchSchedules(scheduler: ScheduleScheduler) {
+        while (true) {
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                runCatching {
+                    com.imrat.focuslock.data.ScheduleRepository(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+                        .observe(uid).collect { list -> scheduler.save(list); scheduler.rearm(list) }
+                }.onFailure { Log.w("CoreService", "schedule listener: ${it.message}") }
+            }
+            delay(60_000) // not signed in yet, or listener failed: retry
         }
     }
 

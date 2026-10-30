@@ -70,4 +70,7 @@
     <string name="locknow_start">Start lock</string>
     <string name="mode_full">Full Lock</string>
     <string name="mode_apps">Apps Lock</string>
+    <string name="warn_channel">Lock warnings</string>
+    <string name="warn_title">Focus lock starts soon</string>
+    <string name="warn_text">A scheduled lock begins in about 10 minutes.</string>
 </resources>

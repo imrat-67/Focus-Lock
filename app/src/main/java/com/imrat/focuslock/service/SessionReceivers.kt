@@ -18,10 +18,11 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
         val engine = SessionEngine(ctx)
         engine.onBoot()
+        ScheduleScheduler(ctx).rearm()
         CoreService.start(ctx)
         val pending = goAsync()
         Thread {
-            try { engine.syncClock() } finally { pending.finish() }
+            try { if (engine.syncClock()) ScheduleScheduler(ctx).rearm() } finally { pending.finish() }
         }.start()
     }
 }

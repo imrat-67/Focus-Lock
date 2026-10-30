@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.imrat.focuslock.data.LockMode
 import com.imrat.focuslock.data.LockSession
+import com.imrat.focuslock.data.Schedule
 import com.imrat.focuslock.data.SessionKind
 import com.imrat.focuslock.data.SessionRepository
 import com.imrat.focuslock.data.SessionStatus
@@ -47,6 +48,35 @@ class SessionEngine(ctx: Context) {
         )
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             runCatching { repo.createWithId(userUid, id, doc) }.onFailure { Log.w(TAG, "upload failed: ${it.message}") }
+        }
+        return s
+    }
+
+    /**
+     * Starts the occurrence [p] of [sch] if it is running now and was never started before (idempotent, SCH-3).
+     * Ends at the occurrence end. Only the creator's own phone-side schedule is uploaded (rules: createdBy == auth uid).
+     */
+    @Synchronized
+    fun startScheduled(sch: Schedule, p: Planned): LocalSession? {
+        val srv = clock.now()
+        val el = SystemClock.elapsedRealtime()
+        if (!p.isRunning(srv)) return null
+        val prefs = app.getSharedPreferences("sched_started", Context.MODE_PRIVATE)
+        val done = prefs.getStringSet("keys", emptySet()).orEmpty()
+        if (p.key in done) return null
+        prefs.edit().putStringSet("keys", (done + p.key).toList().takeLast(60).toSet()).apply()
+        val s = SessionPlan.build(p.key, sch.createdBy, sch.mode, sch.packages, p.endMs - srv, srv, el)
+        store.save(SessionPlan.prune(store.load(), el) + s)
+        scheduleEnd(s)
+        val me = FirebaseAuth.getInstance().currentUser?.uid
+        if (me != null && sch.createdBy == me) {
+            val doc = LockSession(
+                p.key, me, sch.mode, SessionKind.SCHEDULED, sch.packages, p.startMs, p.endMs, SessionStatus.ACTIVE,
+                null, null, null, remoteInstant = false, passwordUsed = false,
+            )
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                runCatching { SessionRepository(FirebaseFirestore.getInstance()).createWithId(me, p.key, doc) }
+            }
         }
         return s
     }
