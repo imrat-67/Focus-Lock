@@ -20,7 +20,10 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T10b remaining (SCH-4 Observer cancel of schedule-made sessions, remote schedules UI, LINK-7 guard on Release)
-Plan/steps: [ ] a) read SchedulesScreen/ScheduleRepository + decide minimal approach
+Task: T10b remaining. Approach: (1) SchedulesScreen gets myUid param so Observer can manage target's schedules from RemoteDevice; (2) SCH-4: when an Observer-created schedule is deleted/disabled (server-confirmed snapshot), User phone ends its running local session (id = scheduleId_startMs) via pure ScheduleCancel + test; (3) LINK-7 guard on Observer Release via observeLive.
+[ ] a) ScheduleCancel pure + test + ScheduleRepository.observeConfirmed + CoreService job
+[ ] b) SchedulesScreen myUid + RemoteDevice schedules page
+[ ] c) LINK-7 Release guard in LinksScreen
+[ ] d) build, install, commit
 Files touched: none yet
 Last commit: see git log
