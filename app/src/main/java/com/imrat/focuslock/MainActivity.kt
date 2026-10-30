@@ -9,6 +9,7 @@ import com.imrat.focuslock.data.AppEntry
 import com.imrat.focuslock.lock.InstalledApps
 import com.imrat.focuslock.ui.FormatsScreen
 import com.imrat.focuslock.ui.LockNowScreen
+import com.imrat.focuslock.ui.SchedulesScreen
 import com.imrat.focuslock.lock.LockActivity
 import com.imrat.focuslock.lock.SessionEngine
 import androidx.lifecycle.lifecycleScope
@@ -56,9 +57,13 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) { CoreService.start(this@MainActivity) }
                             var showFormats by rememberSaveable { mutableStateOf(false) }
                             var showLockNow by rememberSaveable { mutableStateOf(false) }
+                            var showSchedules by rememberSaveable { mutableStateOf(false) }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
+                            } else if (showSchedules) {
+                                BackHandler { showSchedules = false }
+                                SchedulesScreen(s.profile.uid, apps, container.schedules, container.formats) { showSchedules = false }
                             } else if (showLockNow) {
                                 BackHandler { showLockNow = false }
                                 LockNowScreen(s.profile.uid, apps, container.formats, { mode, pkgs, ms ->
@@ -80,6 +85,7 @@ class MainActivity : ComponentActivity() {
                                     { showPerms = true },
                                     { showFormats = true },
                                     { showLockNow = true },
+                                    { showSchedules = true },
                                 ) { vm.signOut(this@MainActivity) }
                             }
                         }

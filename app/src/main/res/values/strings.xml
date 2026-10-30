@@ -73,4 +73,14 @@
     <string name="warn_channel">Lock warnings</string>
     <string name="warn_title">Focus lock starts soon</string>
     <string name="warn_text">A scheduled lock begins in about 10 minutes.</string>
+    <string name="sched_open">Schedules</string>
+    <string name="sched_title">Schedules</string>
+    <string name="sched_new">New schedule</string>
+    <string name="sched_empty">No schedules yet. A schedule locks your phone automatically at set times.</string>
+    <string name="sched_by_observer">set by your Observer</string>
+    <string name="sched_repeat">Repeat weekly</string>
+    <string name="sched_once">One time</string>
+    <string name="sched_from">From</string>
+    <string name="sched_to">To</string>
+    <string name="sched_rules">Longest lock is 12 hours. If the end time is earlier than the start, it ends the next day.</string>
 </resources>

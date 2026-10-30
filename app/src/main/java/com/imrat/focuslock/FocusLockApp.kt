@@ -19,6 +19,7 @@ class AppContainer(app: Application) {
     val sessions = SessionRepository(db)
     val appList = AppListRepository(db)
     val formats = FormatRepository(db)
+    val schedules = com.imrat.focuslock.data.ScheduleRepository(db)
 }
 
 class FocusLockApp : Application() {
