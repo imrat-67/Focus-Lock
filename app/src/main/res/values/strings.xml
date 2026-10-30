@@ -2,4 +2,15 @@
 <resources>
     <string name="app_name">Focus Lock</string>
     <string name="tagline">Stay focused. Together.</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="error_sign_in">Sign-in failed. Check your connection and try again.</string>
+    <string name="error_profile">Could not load your account. Check your connection and try again.</string>
+    <string name="home_title">Welcome, %1$s</string>
+    <string name="home_friend_code">Your friend code</string>
+    <string name="home_friend_code_hint">Share it so someone can ask to be your Observer.</string>
+    <string name="home_placeholder">Locking features arrive in the next updates.</string>
+    <string name="sign_out">Sign out</string>
+    <string name="other_device_title">Another phone is linked</string>
+    <string name="other_device_body">This account already manages a different phone. Sign out and use a different Google account here.</string>
 </resources>

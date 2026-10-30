@@ -20,6 +20,6 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T04 (started; boot verified, git clean at 83e44e9)
-Plan/steps: [x] a) read ARCHITECTURE · [x] b) versions verified (D19) · [~] c) models/repos DONE (data/*.kt, unit tests written, not yet run); sign-in screen+VM TODO · [x] d) firestore.rules + rules-tests: 25/25 pass (cd rules-tests; export JAVA_HOME=~/tools/jdk-21*; NODE_ENV=development npm i --include=dev; npm test) · [ ] e) deploy rules · [ ] f) build + unit tests
+Plan/steps: [x] a) read ARCHITECTURE · [x] b) versions verified (D19) · [~] c) models/repos DONE (data/*.kt, unit tests written, not yet run); sign-in screen+VM WRITTEN (not yet compiled) · [x] d) firestore.rules + rules-tests: 25/25 pass (cd rules-tests; export JAVA_HOME=~/tools/jdk-21*; NODE_ENV=development npm i --include=dev; npm test) · [x] e) rules deployed to focuslock-imrat-67 · [ ] f) build + unit tests
 Files touched: (none yet) app/build.gradle.kts, gradle/libs*, app/src/main/**, firestore.rules, rules tests
 Last commit: see git log
