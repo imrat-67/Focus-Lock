@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.imrat.focuslock.lock.SessionEngine
 import com.imrat.focuslock.security.KeystoreBox
@@ -34,6 +35,7 @@ class CoreService : Service() {
     private var remoteJob: kotlinx.coroutines.Job? = null
     private var alertJob: kotlinx.coroutines.Job? = null
     private var cancelJob: kotlinx.coroutines.Job? = null
+    private var poolJob: kotlinx.coroutines.Job? = null
     private val pendingStarts = mutableMapOf<String, kotlinx.coroutines.Job>()
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -65,6 +67,7 @@ class CoreService : Service() {
         if (remoteJob == null) remoteJob = scope.launch { watchRemote(engine) }
         if (cancelJob == null) cancelJob = scope.launch { watchScheduleCancels(engine) }
         if (alertJob == null) alertJob = scope.launch { watchLinkAlerts() }
+        if (poolJob == null) poolJob = scope.launch { watchPasswordPools() }
         if (watcherJob == null) {
             val watcher = com.imrat.focuslock.lock.ForegroundWatcher(this, com.imrat.focuslock.lock.SessionCache(this))
             watcherJob = scope.launch { while (true) { delay(runCatching { watcher.step() }.getOrDefault(3_000L)) } }
@@ -138,6 +141,32 @@ class CoreService : Service() {
                 }.onFailure { Log.w("CoreService", "schedule cancel listener: ${it.message}") }
             }
             delay(60_000)
+        }
+    }
+
+    /**
+     * UNL-6 (Observer side): whenever this phone is online, make sure every Observer-made schedule of every User it
+     * watches has a password for each of its next 14 occurrences. Runs at start, then every 6 hours.
+     */
+    private suspend fun watchPasswordPools() {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val links = com.imrat.focuslock.data.LinkRepository(db)
+        val schedules = com.imrat.focuslock.data.ScheduleRepository(db)
+        val topUp = com.imrat.focuslock.lock.SchedulePoolTopUp(
+            com.imrat.focuslock.security.PasswordVault(File(filesDir, "pwvault.bin"), KeystoreBox.create()), schedules,
+        )
+        while (true) {
+            val me = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (me != null) {
+                runCatching {
+                    val users = links.observeUsersOf(me).first()
+                        .filter { it.status != com.imrat.focuslock.data.LinkStatus.PENDING }.map { it.userUid }
+                    for (u in users) for (s in schedules.get(u)) {
+                        runCatching { topUp.topUp(u, me, s) }.onFailure { Log.w("CoreService", "pool top-up: ${it.message}") }
+                    }
+                }.onFailure { Log.w("CoreService", "pool job: ${it.message}") }
+            }
+            delay(6 * 60 * 60_000L)
         }
     }
 

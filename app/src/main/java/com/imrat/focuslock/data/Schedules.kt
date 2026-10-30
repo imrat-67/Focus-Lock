@@ -101,6 +101,10 @@ class ScheduleRepository(private val db: FirebaseFirestore) {
         .filter { !it.metadata.isFromCache }
         .map { snap -> snap.documents.mapNotNull { d -> d.data?.let { ScheduleCodec.fromMap(d.id, it) } } }
 
+    /** One-shot read (server preferred) for background top-ups. */
+    suspend fun get(uid: String): List<Schedule> =
+        col(uid).get().await().documents.mapNotNull { d -> d.data?.let { ScheduleCodec.fromMap(d.id, it) } }
+
     suspend fun create(uid: String, s: Schedule): String {
         val ref = col(uid).document()
         ref.set(ScheduleCodec.toMap(s)).await()

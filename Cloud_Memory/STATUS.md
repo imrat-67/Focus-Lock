@@ -25,7 +25,7 @@ T11a verified on vivo: debug lock w/ pw -> wrong pw "4 attempts left", correct p
 Plan T11b (rules already allow pwPool map<=40 on Observer-made schedules; key = occurrence startMs, value = "hash:salt"; vault key = Planned.key):
 [x] 1 lock/SchedulePool (pure: entry/parse, upcoming 14, missing, prune) + Schedule.pwPool + codec/json + tests
 [x] 2 SessionEngine.startScheduled uses pool entry (only when createdBy != me); none -> remote-unlock only
-[ ] 3 Observer top-up: SchedulePoolTopUp(vault, repo); call after schedule create (SchedulesScreen), on RemoteDevice open; CoreService 6-hourly loop for linked users
+[~] 3 Observer top-up: DONE in code (unbuilt, uncommitted): SchedulePoolTopUp, ScheduleRepository.get, CoreService.watchPasswordPools (6-hourly). TODO: build, then call topUp after schedule create (SchedulesScreen) + on RemoteDevice open
 [ ] 4 RemoteDevice: list next run per Observer-made schedule with password (Copy) + warning when pool missing (UNL-6 "Observer is told")
 [ ] 5 build, tests, rules tests if rules touched, install, commit feat(T11b), mark T11 DONE, rewrite NEXT
 Files touched: none yet
