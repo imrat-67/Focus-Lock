@@ -20,4 +20,8 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none in progress. Next: T12 (see NEXT.md).
+Task: T12. SEC-1 already done (AdminReceiver + Perms DEVICE_ADMIN). Remaining:
+[ ] 1 SEC-2: LockPolicy.isProtectedScreen(pkg,cls,text) pure + tests; accessibility cover when lock active (needs windowContent for admin-deactivate/app-info screens)
+[ ] 2 AUTH-3: disable sign-out/delete while lock active (Screens/MainActivity) + test
+[ ] 3 build, tests, install, commit feat(T12), mark DONE, rewrite NEXT
+Files touched: none yet
