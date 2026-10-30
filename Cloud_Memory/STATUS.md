@@ -20,17 +20,11 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T11a = password for remote instant locks + unlock on lock screen + self-lock emergency exit; T11b = schedule pwPool (UNL-6)
-Plan T11a:
-[x] 1 pure PasswordCrypto (6 digits, salt, PBKDF2 100k, const-time verify) + UnlockPolicy (5 wrong->10 min cooldown, boot keeps cooldown) + tests
-[x] 2 LocalSession.exitAtElapsedMs + codec; SessionStore tests still pass
-[x] 3 lock screen unlock + self-lock emergency exit + doneIds (builds, unit tests pass; device check in step 5 via debug extras --es pw / --ez self)
-[x] 4 Observer: (rules already allow create w/ pwHash + Observer regenerate pwHash/pwSalt)
-  [x] 4a PasswordVault (security/, encrypted id->plain via SecretBox) + test
-  [x] 4b SessionRepository.regenerate + RemoteSync.rehash plan (+test) + SessionEngine.updateHash + CoreService applies it
-  [x] 4c Remote.kt: fresh pw on remote lock (newId+createWithId, vault.put), show/copy pw + Regenerate per running session; strings
-  [x] 4d build + tests
-[~] 5 install on vivo (adb wireless connected), self-check: debug lock with --es pw 123456 (wrong x5 -> cooldown, right -> unlocks, no restart) and --ez self true (Emergency exit 5 min). Steps 1-4 committed; 92 unit tests pass
-Plan T11b: Schedule.pwPool field+codec, Observer top-up 14 occurrences, startScheduled uses pool
+Task: T11b = schedule pwPool (UNL-6). T11a DONE (see below), not yet marked on board because T11b remains.
+T11a verified on vivo: debug lock w/ pw -> wrong pw "4 attempts left", correct pw ends lock; self-lock shows Emergency exit -> 5:00 countdown -> lock lifted. 5-wrong cooldown only unit-tested (7 UnlockPolicy tests), not on device. 92 unit tests pass.
+Plan T11b:
+[ ] 1 Schedule.pwPool field + codec (+rules: allow pwPool on schedule docs; extend rules tests)
+[ ] 2 Observer top-up: 14 upcoming occurrences hashed, plaintext in PasswordVault keyed by occKey; shown per occurrence
+[ ] 3 SessionEngine.startScheduled uses pool entry for that occurrence; none -> remote-unlock only
+[ ] 4 tell Observer when pool is empty (UNL-6); build, tests, install
 Files touched: none yet
-Last commit: see git log

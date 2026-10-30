@@ -1,15 +1,16 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- none (Claude self-checks what it can; only a 2nd-account run is left, optional). Old note: test T10b with 2 accounts: (1) Observer Manage > Schedules > create a schedule that is running now, then delete it -> User phone lock should lift; (2) send a link request / removal request and look for the notification; (3) while a remote lock runs, Observer's Release button should be disabled.
+- none. Optional 2-account check of T11a: Observer "Lock now" on User -> password shows under Remote sessions (Copy / New password); User phone accepts it on the lock screen; after New password the old one fails.
 
-## Do now: T11 emergency password
-Read SRS UNL-2..7 and docs/ARCHITECTURE.md password section. Needs: 6-digit per-session password generated on Observer phone, salted slow hash (pwHash/pwSalt) in session doc, check on User lock screen, 5 wrong -> 10 min cooldown (persisted), regenerate (UNL-5), schedule pool of 14 (UNL-6), self-lock emergency exit 5-min countdown (UNL-7). Start with pure logic + tests.
+## Do now: T11b schedule password pool (UNL-6)
+T11a (lock-screen unlock, cooldown, Emergency exit, PasswordVault, regenerate) is committed and device-verified. Next: see CHECKPOINT plan in STATUS.md. First command: grep -n "pw\|class Schedule" app/src/main/java/com/imrat/focuslock/data/Schedules.kt firestore.rules. After T11b mark T11 DONE on the board, then T12.
 
 ## Notes
-- DEBUG_LOCK while Chrome is foreground does not cover until the next window change (accessibility event); T13 check that Lock now/remote start always shows LockActivity.
-- Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120 --es pkgs a.b,c.d` ; DEBUG_CLEAR ends it (adb is wireless, ~/Android/Sdk/platform-tools/adb).
-- Boot rebase resets password cooldown (fix in T11). Home placeholder text is stale (T13). Observer-made schedules use the Observer's timezone (assume same tz).
-- Observer-made schedule sessions have no server doc, so LINK-7 Release guard cannot see them.
+- LockActivity is NOT exported: `am start` fails. To show the lock in tests, broadcast DEBUG_LOCK then `am start -n com.imrat.focuslock/.MainActivity` (window change makes the enforcer cover). Extras: --es pw 123456, --ez self true. Read screen with `adb shell uiautomator dump` (screenshots were unreliable).
+- T13: LockScreen keeps `outcome` state after a session ends (stale "no emergency password" text seen once); reset it when session id changes. First tap on Unlock after typing only hides the keyboard on the vivo (needs 2nd tap) - consider IME handling.
+- Boot rebase now keeps cooldown/exit (UnlockPolicy.afterBoot) - confirm it is wired in boot rebase (T13 reboot test).
+- Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120`; DEBUG_CLEAR ends it (adb wireless, ~/Android/Sdk/platform-tools/adb).
+- Observer-made schedule sessions have no server doc (LINK-7 guard blind); Observer schedules use Observer timezone.
 - Rules tests: cd rules-tests; export JAVA_HOME=~/tools/jdk-21.0.13+9; NODE_ENV=development npm i --include=dev; npm test.
 - Debug APK 20 MB; release < 15 MB (T13). Permissions screen title overlaps status bar (T13).
