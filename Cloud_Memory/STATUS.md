@@ -19,5 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T12 Hardening: SEC-1 Device Admin; SEC-2 LockPolicy.isProtectedScreen + accessibility scan (windowContent) + tests; AUTH-3 sign-out disabled during lock (VM guard + UI). 89 unit tests pass, installed on vivo. SEC-2 device-verified on vivo (App info covered by LockActivity during lock)
 - [~] T13 Done: perms inset, signed release APK 3.2 MB (R8, keystore ~/focuslock-keys, keystore.properties ignored), README. Left: add release SHA-1 to Firebase, on-device pass, GitHub Release
 
+- [ ] T14 REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
+
 ## CHECKPOINT (live; overwrite before each step)
 Task: T13 remaining. DONE: release SHA-1, release APK installed on vivo, release sign-in CONFIRMED by user. NOW: device pass on release (1 Lock now+back/home, 2 reboot, 3 clock change, 4 scheduled start, 5 SEC-2); then GitHub Release (user uploads APK, tag v0.1.0). Files: none.
