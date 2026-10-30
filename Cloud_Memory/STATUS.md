@@ -4,7 +4,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## Task board (in order)
 - [x] T00 Docs, repo init, Cloud_Memory v2 (SRS v2, ARCHITECTURE)
-- [ ] T01 Toolchain: Android cmdline-tools + platform + build-tools in ~/Android/Sdk, licences, ANDROID_HOME, `adb` works
+- [x] T01 Android SDK at ~/Android/Sdk (platform 36, build-tools 36.1.0, adb 1.0.41), ANDROID_HOME in ~/.bashrc
 - [ ] T02 Skeleton: Gradle KTS + version catalog + Compose app `com.imrat.focuslock`, builds debug APK, .gitignore
 - [ ] T03 Firebase: USER creates project + Google sign-in + adds SHA-1; Claude wires google-services.json, Auth, Firestore, deploys rules (AUTH-1,2)
 - [ ] T04 Data layer: models, repositories, Firestore rules + emulator rules tests (SEC-3)

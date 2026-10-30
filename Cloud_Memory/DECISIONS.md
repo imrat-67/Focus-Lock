@@ -13,3 +13,4 @@ D10 · Formats stored under `users/{uid}/formats`, editable by User and Observer
 D11 · Removal request auto-completes after 7 days; blocked during active lock · prevents permanent stuck state without undermining a running lock
 D12 · Single `:app` module, manual DI, no Hilt · small APK, fewer moving parts
 D13 · Not 100% bypass-proof (Safe Mode/ADB/root/factory reset) · Android limitation; documented in SRS SEC-6
+D14 · compileSdk/targetSdk 36, build-tools 36.1.0, SDK in ~/Android/Sdk (cmdline-tools build 14742923) · latest stable at setup time
