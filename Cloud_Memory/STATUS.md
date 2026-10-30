@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none active.
-Plan/steps: —
-Files touched: —
+Task: T05
+Plan/steps: [ ] a) Permissions: PermissionChecker + PermissionsScreen (UI-2) + stub LockAccessibilityService/AdminReceiver so they can be enabled · [ ] b) CoreService foreground skeleton (specialUse FGS, silent channel) started when signed in · [ ] c) SessionStore: SessionRecord JSON codec + Keystore AES-GCM box + unit tests · [ ] d) build, install on vivo Y29, verify checklist + service on device
+Files touched: app/src/main/** (service/, security/, ui/Permissions*), AndroidManifest.xml, res/xml/*, app/build.gradle.kts
 Last commit: see git log
