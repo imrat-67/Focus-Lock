@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none active.
-Plan/steps: —
-Files touched: —
-Last commit: —
+Task: T02 skeleton
+Plan/steps: [ ] look up versions (AGP, Kotlin, Gradle, Compose BOM, Firebase BoM, google-services) -> [ ] gradle wrapper -> [ ] write build files -> [ ] MainActivity Compose -> [ ] assembleDebug -> [ ] commit/push
+Files touched: none yet
+Last commit: 72d931c
