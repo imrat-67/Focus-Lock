@@ -19,4 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none (T08 not started)
+Task: T08
+Plan/steps: [ ] a) pure: TimeModel (serverNow, endElapsed, boot rebase) + ScheduleExpander + tests · [ ] b) LocalSession extra fields (offset,lastRemaining) + ServerClock (HTTPS Date header) · [ ] c) SessionEngine (start self instant lock: local store + Firestore, end alarm, cleanup) + BootReceiver rebase + CoreService heartbeat · [ ] d) Lock-now UI · [ ] e) Schedule model/repo + ScheduleScheduler (exact alarms, 10-min notice NOT-1) + create-schedule UI · [ ] f) test on emulator (boot/clock change) + phone
+Files touched: app/src/main/** (time/, lock/, service/, data/, ui/), AndroidManifest.xml, strings.xml, tests
+Last commit: see git log
