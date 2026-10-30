@@ -1,7 +1,9 @@
 package com.imrat.focuslock.data
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.snapshots
+import kotlinx.coroutines.flow.filter
 import com.imrat.focuslock.time.ScheduleSpec
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -88,6 +90,11 @@ class ScheduleRepository(private val db: FirebaseFirestore) {
     fun observe(uid: String): Flow<List<Schedule>> = col(uid).snapshots().map { snap ->
         snap.documents.mapNotNull { d -> d.data?.let { ScheduleCodec.fromMap(d.id, it) } }
     }
+
+    /** Like [observe] but only server-confirmed lists, never the possibly empty first cache snapshot. */
+    fun observeConfirmed(uid: String): Flow<List<Schedule>> = col(uid).snapshots(MetadataChanges.INCLUDE)
+        .filter { !it.metadata.isFromCache }
+        .map { snap -> snap.documents.mapNotNull { d -> d.data?.let { ScheduleCodec.fromMap(d.id, it) } } }
 
     suspend fun create(uid: String, s: Schedule): String {
         val ref = col(uid).document()

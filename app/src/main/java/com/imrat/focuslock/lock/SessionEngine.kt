@@ -68,6 +68,8 @@ class SessionEngine(ctx: Context) {
     @Synchronized
     fun endLocal(id: String) = store.remove(id)
 
+    fun local(): List<LocalSession> = store.load()
+
     fun localIds(): Set<String> = store.load().map { it.id }.toSet()
 
     /**

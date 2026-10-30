@@ -33,6 +33,7 @@ class CoreService : Service() {
     private var watcherJob: kotlinx.coroutines.Job? = null
     private var remoteJob: kotlinx.coroutines.Job? = null
     private var alertJob: kotlinx.coroutines.Job? = null
+    private var cancelJob: kotlinx.coroutines.Job? = null
     private val pendingStarts = mutableMapOf<String, kotlinx.coroutines.Job>()
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -62,6 +63,7 @@ class CoreService : Service() {
         scheduler.rearm()
         if (scheduleJob == null) scheduleJob = scope.launch { watchSchedules(scheduler) }
         if (remoteJob == null) remoteJob = scope.launch { watchRemote(engine) }
+        if (cancelJob == null) cancelJob = scope.launch { watchScheduleCancels(engine) }
         if (alertJob == null) alertJob = scope.launch { watchLinkAlerts() }
         if (watcherJob == null) {
             val watcher = com.imrat.focuslock.lock.ForegroundWatcher(this, com.imrat.focuslock.lock.SessionCache(this))
@@ -116,6 +118,22 @@ class CoreService : Service() {
                         }
                     }
                 }.onFailure { Log.w("CoreService", "session listener: ${it.message}") }
+            }
+            delay(60_000)
+        }
+    }
+
+    /** SCH-4: an Observer deleting or disabling their schedule ends its running session (needs a server-confirmed list). */
+    private suspend fun watchScheduleCancels(engine: SessionEngine) {
+        val repo = com.imrat.focuslock.data.ScheduleRepository(com.google.firebase.firestore.FirebaseFirestore.getInstance())
+        while (true) {
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
+            if (uid != null) {
+                runCatching {
+                    repo.observeConfirmed(uid).collect { list ->
+                        com.imrat.focuslock.data.ScheduleCancel.idsToEnd(engine.local(), list, uid).forEach { engine.endLocal(it) }
+                    }
+                }.onFailure { Log.w("CoreService", "schedule cancel listener: ${it.message}") }
             }
             delay(60_000)
         }
