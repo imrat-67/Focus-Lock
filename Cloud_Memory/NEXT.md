@@ -1,14 +1,14 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Optional but valuable: with a 2nd Google account on another phone, test T09+T10: send request by friend code, accept, then Observer: Manage > Lock now, check 1-min warning + lock starts, then Unlock now. Report anything odd.
+- Optional: test T10b with 2 accounts: (1) Observer Manage > Schedules > create a schedule that is running now, then delete it -> User phone lock should lift; (2) send a link request / removal request and look for the notification; (3) while a remote lock runs, Observer's Release button should be disabled.
 
-## Do now: T10b
-NOT-3 local notifications for link/removal requests (listener in CoreService on own link + observer's list); SCH-4 Observer cancel of schedule-made sessions (rules forbid User writing createdBy=observer docs, so Observer must write the session doc when cancelling); remote schedules UI (SchedulesScreen takes one uid); LINK-7 guard on Observer Release using sessions listener. Then T11 (emergency password).
+## Do now: T11 emergency password
+Read SRS UNL-2..7 and docs/ARCHITECTURE.md password section. Needs: 6-digit per-session password generated on Observer phone, salted slow hash (pwHash/pwSalt) in session doc, check on User lock screen, 5 wrong -> 10 min cooldown (persisted), regenerate (UNL-5), schedule pool of 14 (UNL-6), self-lock emergency exit 5-min countdown (UNL-7). Start with pure logic + tests.
 
 ## Notes
-- Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120 --es pkgs a.b,c.d` ; DEBUG_CLEAR ends it (phone: adb is wireless, ~/Android/Sdk/platform-tools/adb).
-- T08 limits: Observer-created schedules run locally only (rules forbid User writing session createdBy=observer): T10 must cover Observer cancel (UNL-1/SCH-4). Boot rebase resets password cooldown (T11). Home placeholder text is stale (T13).
-- T09 limit: Observer 'Release' does not check whether the User has an active lock (Observer cannot see it yet); T10 live session listener should guard LINK-7 there.
+- Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120 --es pkgs a.b,c.d` ; DEBUG_CLEAR ends it (adb is wireless, ~/Android/Sdk/platform-tools/adb).
+- Boot rebase resets password cooldown (fix in T11). Home placeholder text is stale (T13). Observer-made schedules use the Observer's timezone (assume same tz).
+- Observer-made schedule sessions have no server doc, so LINK-7 Release guard cannot see them.
 - Rules tests: cd rules-tests; export JAVA_HOME=~/tools/jdk-21.0.13+9; NODE_ENV=development npm i --include=dev; npm test.
 - Debug APK 20 MB; release < 15 MB (T13). Permissions screen title overlaps status bar (T13).

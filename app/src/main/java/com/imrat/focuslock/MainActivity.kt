@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                             } else if (showLinks) {
                                 BackHandler { showLinks = false }
                                 val lockActive = SessionCache(this@MainActivity).get().any { it.endElapsedMs > SystemClock.elapsedRealtime() }
-                                LinksScreen(s.profile.uid, container.links, container.users, lockActive, { uid, name -> remoteUid = uid; remoteName = name }) { showLinks = false }
+                                LinksScreen(s.profile.uid, container.links, container.users, container.sessions, lockActive, { uid, name -> remoteUid = uid; remoteName = name }) { showLinks = false }
                             } else if (showSchedules) {
                                 BackHandler { showSchedules = false }
                                 SchedulesScreen(s.profile.uid, apps, container.schedules, container.formats) { showSchedules = false }

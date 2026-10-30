@@ -32,6 +32,8 @@ import com.imrat.focuslock.data.Link
 import com.imrat.focuslock.data.LinkRepository
 import com.imrat.focuslock.data.LinkRules
 import com.imrat.focuslock.data.LinkStatus
+import com.imrat.focuslock.data.SessionRepository
+import com.imrat.focuslock.data.SessionStatus
 import com.imrat.focuslock.data.UserRepository
 import kotlinx.coroutines.launch
 
@@ -51,7 +53,7 @@ private fun produceName(uid: String, users: UserRepository, fallback: String) =
 
 /** Link management: my Observer (LINK-2/4/6/7) and the people I observe. */
 @Composable
-fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, lockActive: Boolean, onOpenPerson: (String, String) -> Unit, onBack: () -> Unit) {
+fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, sessions: SessionRepository, lockActive: Boolean, onOpenPerson: (String, String) -> Unit, onBack: () -> Unit) {
     val myLink by remember { links.observe(myUid) }.collectAsStateWithLifecycle(null)
     val people by remember { links.observeUsersOf(myUid) }.collectAsStateWithLifecycle(emptyList())
     val scope = rememberCoroutineScope()
@@ -124,10 +126,15 @@ fun LinksScreen(myUid: String, links: LinkRepository, users: UserRepository, loc
                     LinkStatus.REMOVAL_REQUESTED -> {
                         Text(stringResource(R.string.links_removal_from, who))
                         OutlinedButton(onClick = { onOpenPerson(p.userUid, who) }) { Text(stringResource(R.string.links_manage)) }
+                        // LINK-7: no release while a lock they can see is running (schedule-made locks have no server record yet).
+                        val live by remember(p.userUid) { sessions.observeLive(p.userUid, System.currentTimeMillis()) }
+                            .collectAsStateWithLifecycle(emptyList())
+                        val locked = live.any { it.status != SessionStatus.ENDED && it.endAtMs > System.currentTimeMillis() }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(onClick = { run { links.completeRemoval(p.userUid) } }) { Text(stringResource(R.string.links_release)) }
+                            Button(enabled = !locked, onClick = { run { links.completeRemoval(p.userUid) } }) { Text(stringResource(R.string.links_release)) }
                             OutlinedButton(onClick = { run { links.declineRemoval(p.userUid) } }) { Text(stringResource(R.string.links_keep)) }
                         }
+                        if (locked) Text(stringResource(R.string.links_release_locked), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

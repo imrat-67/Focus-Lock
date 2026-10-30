@@ -14,16 +14,13 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T08 Instant + Scheduled locks, alarms, timer, boot rebase, ServerClock; Lock now VERIFIED on vivo (needed overlay perm D24 + re-cover on stop); reboot/clock-tamper/scheduled-start/notice NOT yet device-tested -> T13 pass
 - [x] T09 Links screen (request by email/code, accept/decline, removal + 7-day auto, LINK-7 lock guard) + LinkRules tests (3); installed on vivo; request/accept CONFIRMED working by user, 'My Device' vs 'Remote Device' chooser deferred to T10
 - [x] T10 Remote instant lock + Observer unlock + 1-min warning: RemoteSync (4 tests), CoreService session listener, RemoteDeviceScreen (lock now, formats, unlock list); CONFIRMED working by user on devices. NOT-1 10-min warning already existed from T08
-- [~] T10b NOT-3 DONE (LinkAlerts + 3 tests, installed, not yet seen on device); remaining: Observer cancel of schedule-made sessions (SCH-4); remote schedules UI; LINK-7 guard on Observer Release
+- [x] T10b NOT-3 alerts (LinkAlerts, 3 tests); SCH-4 Observer deleting/disabling a schedule ends its running session (ScheduleCancel, 3 tests); Observer can manage target's schedules (RemoteDevice); LINK-7 Release guard (server-visible locks only). Installed on vivo, not yet device-tested
 - [ ] T11 Emergency password (hash, cooldown, pool, regenerate) + self-lock emergency exit (UNL-2..7)
 - [ ] T12 Hardening: Device Admin, block sensitive Settings screens, sign-out guard (SEC-1,2, AUTH-3)
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T10b remaining. Approach: (1) SchedulesScreen gets myUid param so Observer can manage target's schedules from RemoteDevice; (2) SCH-4: when an Observer-created schedule is deleted/disabled (server-confirmed snapshot), User phone ends its running local session (id = scheduleId_startMs) via pure ScheduleCancel + test; (3) LINK-7 guard on Observer Release via observeLive.
-[ ] a) ScheduleCancel pure + test + ScheduleRepository.observeConfirmed + CoreService job
-[ ] b) SchedulesScreen myUid + RemoteDevice schedules page
-[ ] c) LINK-7 Release guard in LinksScreen
-[ ] d) build, install, commit
+Task: T11 (not started)
+Plan/steps: [ ] a) read SRS UNL-2..7, ARCHITECTURE password section, existing pwHash/pwSalt in SessionPlan/LockActivity
 Files touched: none yet
 Last commit: see git log

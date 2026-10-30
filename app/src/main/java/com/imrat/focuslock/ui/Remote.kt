@@ -38,7 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private enum class RemotePage { HOME, LOCK, FORMATS }
+private enum class RemotePage { HOME, LOCK, FORMATS, SCHEDULES }
 
 /** Observer's view of one linked User's phone: lock it, edit its formats, unlock it (UNL-1, NOT-2). */
 @Composable
@@ -64,6 +64,7 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
             }
         }) { page = RemotePage.HOME }
         RemotePage.FORMATS -> FormatsScreen(targetUid, myUid, apps, container.formats) { page = RemotePage.HOME }
+        RemotePage.SCHEDULES -> SchedulesScreen(targetUid, apps, container.schedules, container.formats, myUid) { page = RemotePage.HOME }
         RemotePage.HOME -> {
             val live by remember(targetUid) { container.sessions.observeLive(targetUid, clock.now()) }
                 .collectAsStateWithLifecycle(emptyList())
@@ -74,6 +75,8 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                 Button(onClick = { page = RemotePage.LOCK }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.remote_lock_now)) }
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = { page = RemotePage.FORMATS }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.formats_open)) }
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = { page = RemotePage.SCHEDULES }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.sched_open)) }
                 Spacer(Modifier.height(24.dp))
                 Text(stringResource(R.string.remote_sessions), style = MaterialTheme.typography.titleMedium)
                 val running = live.filter { it.status != SessionStatus.ENDED }

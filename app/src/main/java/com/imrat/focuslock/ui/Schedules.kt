@@ -52,12 +52,12 @@ private fun hhmm(min: Int) = "%02d:%02d".format(min / 60, min % 60)
 
 /** Schedules list (SCH-1). Observer-created ones are read-only here (SCH-2). */
 @Composable
-fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository, formats: FormatRepository, onBack: () -> Unit) {
+fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository, formats: FormatRepository, myUid: String = uid, onBack: () -> Unit) {
     val list by remember(uid) { repo.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     var creating by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     if (creating) {
-        ScheduleEditor(uid, apps, formats, onCancel = { creating = false }) { s ->
+        ScheduleEditor(uid, myUid, apps, formats, onCancel = { creating = false }) { s ->
             scope.launch { runCatching { repo.create(uid, s) }; creating = false }
         }
         return
@@ -68,7 +68,7 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
         if (list.isEmpty()) Text(stringResource(R.string.sched_empty), style = MaterialTheme.typography.bodyMedium)
         LazyColumn(Modifier.weight(1f)) {
             items(list, key = { it.id }) { s ->
-                val mine = s.createdBy == uid
+                val mine = s.createdBy == myUid
                 Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         val whenText = s.oneTimeDate ?: s.days.sorted().joinToString(" ") { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
@@ -107,7 +107,7 @@ private fun TimeField(label: String, minute: Int, onChange: (Int) -> Unit) {
 }
 
 @Composable
-private fun ScheduleEditor(uid: String, apps: List<AppEntry>, formats: FormatRepository, onCancel: () -> Unit, onSave: (Schedule) -> Unit) {
+private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, formats: FormatRepository, onCancel: () -> Unit, onSave: (Schedule) -> Unit) {
     var mode by remember { mutableStateOf(LockMode.FULL) }
     var repeating by remember { mutableStateOf(true) }
     var days by remember { mutableStateOf(setOf<Int>()) }
@@ -118,7 +118,7 @@ private fun ScheduleEditor(uid: String, apps: List<AppEntry>, formats: FormatRep
     val saved by remember(uid) { formats.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     val today = remember { LocalDate.now() }
     val draft = Schedule(
-        "", uid, mode, if (mode == LockMode.APPS) selected.toList() else emptyList(),
+        "", myUid, mode, if (mode == LockMode.APPS) selected.toList() else emptyList(),
         if (repeating) days else emptySet(), if (repeating) null else today.plusDays(dateOffset.toLong()).toString(),
         start, end, ZoneId.systemDefault().id, true,
     )
