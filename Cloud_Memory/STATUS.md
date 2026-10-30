@@ -5,7 +5,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 ## Task board (in order)
 - [x] T00 Docs, repo init, Cloud_Memory v2 (SRS v2, ARCHITECTURE)
 - [x] T01 Android SDK at ~/Android/Sdk (platform 36, build-tools 36.1.0, adb 1.0.41), ANDROID_HOME in ~/.bashrc
-- [ ] T02 Skeleton: Gradle KTS + version catalog + Compose app `com.imrat.focuslock`, builds debug APK, .gitignore
+- [x] T02 Skeleton builds: debug APK OK (Compose hello screen, google-services plugin applied); versions in D16-D18
 - [x] T03 Firebase live: project, Android app, SHA-1, Google sign-in enabled, Firestore (asia-south1), placeholder deny-all rules deployed, app/google-services.json has oauth clients (see D15)
 - [ ] T04 Data layer: models, repositories, Firestore rules + emulator rules tests (SEC-3)
 - [ ] T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T02 skeleton
-Plan/steps: [ ] look up versions (AGP, Kotlin, Gradle, Compose BOM, Firebase BoM, google-services) -> [ ] gradle wrapper -> [ ] write build files -> [ ] MainActivity Compose -> [ ] assembleDebug -> [ ] commit/push
-Files touched: none yet
-Last commit: 72d931c
+Task: none active.
+Plan/steps: —
+Files touched: —
+Last commit: see git log
