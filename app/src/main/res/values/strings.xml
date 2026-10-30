@@ -126,4 +126,9 @@
     <string name="alert_removal_title">Release request</string>
     <string name="alert_removal_body">Someone you observe asks to be released. Open Focus Lock to answer.</string>
     <string name="links_release_locked">A lock is running on their phone. You can release them after it ends.</string>
+    <string name="lock_wrong">Wrong password. %d attempts left.</string>
+    <string name="lock_cooldown">Too many wrong attempts. Try again in %1$d:%2$02d.</string>
+    <string name="lock_no_password">This lock has no emergency password. Ask your Observer to unlock it.</string>
+    <string name="lock_exit">Emergency exit</string>
+    <string name="lock_exit_counting">Emergency exit: the lock ends in %1$d:%2$02d.</string>
 </resources>

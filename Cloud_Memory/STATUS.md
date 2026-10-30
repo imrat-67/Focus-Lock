@@ -22,9 +22,9 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 ## CHECKPOINT (live; overwrite before each step)
 Task: T11a = password for remote instant locks + unlock on lock screen + self-lock emergency exit; T11b = schedule pwPool (UNL-6)
 Plan T11a:
-[ ] 1 pure PasswordCrypto (6 digits, salt, PBKDF2 100k, const-time verify) + UnlockPolicy (5 wrong->10 min cooldown, boot keeps cooldown) + tests
-[ ] 2 LocalSession.exitAtElapsedMs + codec; SessionStore tests still pass
-[ ] 3 lock screen: verify password, success ends session (+markPasswordUsed, doneIds so it never restarts); cooldown msg; self-lock Emergency exit 5-min countdown
+[x] 1 pure PasswordCrypto (6 digits, salt, PBKDF2 100k, const-time verify) + UnlockPolicy (5 wrong->10 min cooldown, boot keeps cooldown) + tests
+[x] 2 LocalSession.exitAtElapsedMs + codec; SessionStore tests still pass
+[~] 3 lock screen: verify password, success ends session (+markPasswordUsed, doneIds so it never restarts); cooldown msg; self-lock Emergency exit 5-min countdown. CODED (LockActivity, SessionEngine attemptUnlock/startExit/processExits/doneIds, RemoteSync passwordUsed filter, strings, debug receiver pw/self extras) but NOT yet built/tested -> run assembleDebug + testDebugUnitTest, then tick
 [ ] 4 Observer: PasswordVault (encrypted local), generate on remote lock, show/copy + Regenerate (UNL-5); RemoteSync handles hash updates + passwordUsed
 [ ] 5 build, tests, install, device self-check with debug lock
 Plan T11b: Schedule.pwPool field+codec, Observer top-up 14 occurrences, startScheduled uses pool

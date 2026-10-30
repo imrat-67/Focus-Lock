@@ -11,7 +11,7 @@ object RemoteSync {
      */
     fun plan(server: List<LockSession>, localIds: Set<String>, me: String, serverNowMs: Long): Plan {
         val starts = server
-            .filter { it.createdBy != me && it.status != SessionStatus.ENDED && it.endAtMs > serverNowMs && it.id !in localIds }
+            .filter { it.createdBy != me && it.status != SessionStatus.ENDED && !it.passwordUsed && it.endAtMs > serverNowMs && it.id !in localIds }
             .map { Start(it, (it.startAtMs - serverNowMs).coerceAtLeast(0)) }
         val ends = server.filter { it.status == SessionStatus.ENDED && it.id in localIds }.map { it.id }
         return Plan(starts, ends)

@@ -41,15 +41,21 @@ import com.google.firebase.auth.FirebaseAuth
 import com.imrat.focuslock.R
 import com.imrat.focuslock.data.LockMode
 import com.imrat.focuslock.security.LocalSession
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** The lock screen (LOCK-4): countdown, who locked, mode, password field, emergency call. Nothing else. */
 class LockActivity : ComponentActivity() {
     private lateinit var cache: SessionCache
+    private lateinit var engine: SessionEngine
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         cache = SessionCache(this)
+        engine = SessionEngine(this)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = Unit
         })
@@ -57,9 +63,12 @@ class LockActivity : ComponentActivity() {
             MaterialTheme {
                 var session by remember { mutableStateOf<LocalSession?>(null) }
                 var remaining by remember { mutableLongStateOf(0L) }
+                var nowEl by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
                 LaunchedEffect(Unit) {
                     while (true) {
+                        withContext(Dispatchers.Default) { engine.processExits() }
                         val now = SystemClock.elapsedRealtime()
+                        nowEl = now
                         val s = LockPolicy.displayed(cache.get(), now)
                         if (s == null) { finishAndRemoveTask(); break }
                         session = s
@@ -67,7 +76,15 @@ class LockActivity : ComponentActivity() {
                         delay(500)
                     }
                 }
-                session?.let { LockScreen(it, remaining, ::emergencyCall) }
+                session?.let {
+                    LockScreen(
+                        it, remaining, nowEl, ::emergencyCall,
+                        onUnlock = { pw, done ->
+                            lifecycleScope.launch { done(withContext(Dispatchers.Default) { engine.attemptUnlock(it.id, pw) }) }
+                        },
+                        onExit = { lifecycleScope.launch(Dispatchers.Default) { engine.startExit(it.id) } },
+                    )
+                }
             }
         }
     }
@@ -98,9 +115,14 @@ class LockActivity : ComponentActivity() {
 }
 
 @Composable
-private fun LockScreen(s: LocalSession, remainingMs: Long, onCall: (String) -> Unit) {
+private fun LockScreen(
+    s: LocalSession, remainingMs: Long, nowEl: Long, onCall: (String) -> Unit,
+    onUnlock: (String, (UnlockPolicy.Outcome) -> Unit) -> Unit, onExit: () -> Unit,
+) {
     var pw by remember { mutableStateOf("") }
-    var msg by remember { mutableStateOf<Int?>(null) }
+    var outcome by remember { mutableStateOf<UnlockPolicy.Outcome?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val myUid = FirebaseAuth.getInstance().currentUser?.uid
     val mine = FirebaseAuth.getInstance().currentUser?.uid == s.createdBy
     val total = (remainingMs.coerceAtLeast(0) + 999) / 1000
     Column(
@@ -126,10 +148,29 @@ private fun LockScreen(s: LocalSession, remainingMs: Long, onCall: (String) -> U
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(8.dp))
-        Button(onClick = { msg = R.string.lock_password_pending }, enabled = pw.length == 6, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.lock_unlock))
+        val cooldownLeft = ((s.cooldownUntilElapsedMs - nowEl).coerceAtLeast(0) + 999) / 1000
+        Button(
+            onClick = { busy = true; onUnlock(pw) { outcome = it; busy = false; pw = "" } },
+            enabled = pw.length == 6 && !busy && cooldownLeft == 0L,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(stringResource(R.string.lock_unlock)) }
+        val err = MaterialTheme.colorScheme.error
+        if (cooldownLeft > 0) {
+            Text(stringResource(R.string.lock_cooldown, cooldownLeft / 60, cooldownLeft % 60), textAlign = TextAlign.Center, color = err)
+        } else when (val o = outcome) {
+            is UnlockPolicy.Outcome.Wrong -> Text(stringResource(R.string.lock_wrong, o.attemptsLeft), textAlign = TextAlign.Center, color = err)
+            UnlockPolicy.Outcome.NoPassword -> Text(stringResource(R.string.lock_no_password), textAlign = TextAlign.Center, color = err)
+            else -> Unit
         }
-        msg?.let { Text(stringResource(it), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.error) }
+        if (UnlockPolicy.canEmergencyExit(s, myUid)) {
+            Spacer(Modifier.height(8.dp))
+            val exitLeft = ((s.exitAtElapsedMs - nowEl).coerceAtLeast(0) + 999) / 1000
+            if (s.exitAtElapsedMs > nowEl) {
+                Text(stringResource(R.string.lock_exit_counting, exitLeft / 60, exitLeft % 60), textAlign = TextAlign.Center)
+            } else {
+                OutlinedButton(onClick = onExit) { Text(stringResource(R.string.lock_exit)) }
+            }
+        }
         Spacer(Modifier.height(24.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = { onCall("112") }) { Text(stringResource(R.string.lock_call_112)) }

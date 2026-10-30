@@ -64,13 +64,61 @@ class SessionEngine(ctx: Context) {
         return local
     }
 
+    private val donePrefs = app.getSharedPreferences("done_sessions", Context.MODE_PRIVATE)
+
+    /** Sessions that already ended here; a server doc that still looks live must never restart them. */
+    fun doneIds(): Set<String> = donePrefs.getStringSet("ids", emptySet()).orEmpty()
+
+    private fun markDone(id: String) {
+        donePrefs.edit().putStringSet("ids", (doneIds() + id).toList().takeLast(200).toSet()).apply()
+    }
+
     /** Observer ended it on the server: drop it from the local cache so the lock lifts. */
     @Synchronized
-    fun endLocal(id: String) = store.remove(id)
+    fun endLocal(id: String) {
+        store.remove(id)
+        markDone(id)
+    }
+
+    /** Lock-screen password try (UNL-3, UNL-4). Success ends the session for good. Verifies off the main thread, please. */
+    @Synchronized
+    fun attemptUnlock(id: String, entered: String): UnlockPolicy.Outcome {
+        val all = store.load()
+        val s = all.firstOrNull { it.id == id } ?: return UnlockPolicy.Outcome.NoPassword
+        val r = UnlockPolicy.attempt(s, entered, SystemClock.elapsedRealtime())
+        if (r.outcome is UnlockPolicy.Outcome.Success) {
+            store.remove(id)
+            markDone(id)
+            val me = FirebaseAuth.getInstance().currentUser?.uid
+            if (me != null) {
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    runCatching { SessionRepository(FirebaseFirestore.getInstance()).markPasswordUsed(me, id) }
+                }
+            }
+        } else {
+            store.save(all.map { if (it.id == id) r.session else it })
+        }
+        return r.outcome
+    }
+
+    /** UNL-7: begin the 5-minute emergency-exit countdown of a self-lock. */
+    @Synchronized
+    fun startExit(id: String) = store.update(id) { UnlockPolicy.startExit(it, SystemClock.elapsedRealtime()) }
+
+    /** UNL-7: end self-locks whose emergency-exit countdown finished. */
+    @Synchronized
+    fun processExits() {
+        val el = SystemClock.elapsedRealtime()
+        store.load().filter { UnlockPolicy.exitDue(it, el) }.forEach {
+            store.remove(it.id)
+            markDone(it.id)
+            markEnded(it)
+        }
+    }
 
     fun local(): List<LocalSession> = store.load()
 
-    fun localIds(): Set<String> = store.load().map { it.id }.toSet()
+    fun localIds(): Set<String> = store.load().map { it.id }.toSet() + doneIds()
 
     /**
      * Starts the occurrence [p] of [sch] if it is running now and was never started before (idempotent, SCH-3).
@@ -115,6 +163,7 @@ class SessionEngine(ctx: Context) {
     @Synchronized
     fun heartbeat() {
         val el = SystemClock.elapsedRealtime()
+        processExits()
         val all = store.load()
         if (all.isEmpty()) return
         val expired = all.filter { it.endElapsedMs <= el }
