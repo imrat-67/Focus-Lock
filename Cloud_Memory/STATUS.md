@@ -22,4 +22,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: none in progress. T14g DONE (committed, debug build installed on vivo, unit tests green).
+Task: T15 user feedback #2. Items: [ ] a logo options (show user, they choose, then apply) [ ] b app icons in AppPicker [ ] c Permissions page redesign + audit manifest (only needed perms) [ ] d rename 'ask to be released' string [ ] e Observer names the device when SENDING request (no 'Someone') [ ] f bottom action areas of screens: aligned/structured (screenshots not received - ask) [ ] g SRS/README/tests sweep, build, install, push
