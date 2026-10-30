@@ -10,7 +10,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in VERIFIED on vivo Y29 (profile + friend code created in Firestore)
 - [x] T05 Permissions checklist, CoreService (foreground, verified on vivo), encrypted SessionStore + tests; checklist UI title overlaps status bar (fix inset, T13)
 - [x] T06 Lock engine: LockPolicy+tests, LockActivity, accessibility enforcement; verified on emulator (Full/Apps lock, call exemption, emergency button, expiry, back/home); real-phone recheck in T13
-- [ ] T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)
+- [x] T07 Installed-app list + upload (AppListSync), Formats model/repo/UI + picker; formats CRUD confirmed by user on phone; upload log not captured (verify in T09 when Observer reads list)
 - [ ] T08 Instant + Scheduled, alarms, timer, reboot persistence, time-tamper guard (LOCK-5,7,8, SCH-1..3)
 - [ ] T09 Link flow: request/accept/remove, lookup, 7-day auto-complete (LINK-1..7)
 - [ ] T10 Remote lock/unlock via live listeners, warnings/notifications (SCH-4, UNL-1, NOT-1..5)
@@ -19,7 +19,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T07
-Plan/steps: [x] a) codecs+tests (pass) · [x] b) repositories · [x] c) InstalledApps + AppListSync in CoreService · [x] d) AppPicker + FormatsScreen + Home button · [~] e) installed on phone, but app shows signed-out ("Sign-in failed"); needs user to tap Continue with Google, then check logcat `AppListSync: uploaded N apps` and Formats create/edit/delete (emulator cannot sign in: no Play services)
-Files touched: done, all committed
-Last commit: see git log
+Task: none (T08 not started)
