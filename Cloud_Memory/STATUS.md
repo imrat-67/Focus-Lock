@@ -15,17 +15,9 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T09 Links screen (request by email/code, accept/decline, removal + 7-day auto, LINK-7 lock guard) + LinkRules tests (3); installed on vivo; request/accept CONFIRMED working by user, 'My Device' vs 'Remote Device' chooser deferred to T10
 - [x] T10 Remote instant lock + Observer unlock + 1-min warning: RemoteSync (4 tests), CoreService session listener, RemoteDeviceScreen (lock now, formats, unlock list); CONFIRMED working by user on devices. NOT-1 10-min warning already existed from T08
 - [x] T10b NOT-3 alerts (LinkAlerts, 3 tests); SCH-4 Observer deleting/disabling a schedule ends its running session (ScheduleCancel, 3 tests); Observer can manage target's schedules (RemoteDevice); LINK-7 Release guard (server-visible locks only). Self-checked: app+service run on vivo without crash, 30 emulator rules tests pass (5 new for app query shapes), debug lock re-covers after Home. Two-account end-to-end not run by Claude (no 2nd login)
-- [ ] T11 Emergency password (hash, cooldown, pool, regenerate) + self-lock emergency exit (UNL-2..7)
+- [x] T11 Emergency password (UnlockPolicy, PasswordVault, regenerate, Emergency exit, schedule pwPool + SchedulePoolTopUp + RemoteDevice list; 92+ unit tests; T11a device-verified, T11b builds+installs on vivo, 2-account pool flow NOT run by Claude)
 - [ ] T12 Hardening: Device Admin, block sensitive Settings screens, sign-out guard (SEC-1,2, AUTH-3)
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T11b = schedule pwPool (UNL-6). T11a DONE (see below), not yet marked on board because T11b remains.
-T11a verified on vivo: debug lock w/ pw -> wrong pw "4 attempts left", correct pw ends lock; self-lock shows Emergency exit -> 5:00 countdown -> lock lifted. 5-wrong cooldown only unit-tested (7 UnlockPolicy tests), not on device. 92 unit tests pass.
-Plan T11b (rules already allow pwPool map<=40 on Observer-made schedules; key = occurrence startMs, value = "hash:salt"; vault key = Planned.key):
-[x] 1 lock/SchedulePool (pure: entry/parse, upcoming 14, missing, prune) + Schedule.pwPool + codec/json + tests
-[x] 2 SessionEngine.startScheduled uses pool entry (only when createdBy != me); none -> remote-unlock only
-[~] 3 Observer top-up: DONE in code (unbuilt, uncommitted): SchedulePoolTopUp, ScheduleRepository.get, CoreService.watchPasswordPools (6-hourly). TODO: build, then call topUp after schedule create (SchedulesScreen) + on RemoteDevice open
-[ ] 4 RemoteDevice: list next run per Observer-made schedule with password (Copy) + warning when pool missing (UNL-6 "Observer is told")
-[ ] 5 build, tests, rules tests if rules touched, install, commit feat(T11b), mark T11 DONE, rewrite NEXT
-Files touched: none yet
+Task: none in progress. Next: T12 (see NEXT.md).
