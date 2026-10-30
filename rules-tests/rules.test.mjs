@@ -7,6 +7,7 @@ import {
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { test, before, after, beforeEach, describe } from 'node:test';
+import assert from 'node:assert/strict';
 
 const U = 'user1', O = 'obs1', X = 'stranger';
 const emailOf = (uid) => `${uid}@example.com`;
@@ -287,6 +288,49 @@ describe('schedules, formats, apps', () => {
     await assertFails(setDoc(col(O, 'apps', 'list'), { items: [], updatedAt: serverTimestamp() }));
     await assertSucceeds(getDoc(col(O, 'apps', 'list')));
     await assertFails(getDoc(col(X, 'apps', 'list')));
+  });
+});
+
+describe('app query shapes (T09/T10b)', () => {
+  const sess = (d, id, over) => setDoc(doc(d, 'users', U, 'sessions', id), session(O, { remoteInstant: true, ...over }));
+
+  test('remote instant: observer creates pending session starting in 60 s; user and observer see it via endAt query', async () => {
+    await seedBase('active');
+    const start = Date.now() + 60000;
+    await assertSucceeds(sess(db(O), 'r1', { status: 'pending', startAt: start, endAt: start + HOUR }));
+    const q = (uid) => query(collection(db(uid), 'users', U, 'sessions'), where('endAt', '>', Date.now() - 60000));
+    for (const uid of [U, O]) assert.equal((await assertSucceeds(getDocs(q(uid)))).size, 1);
+    await assertFails(getDocs(query(collection(db(X), 'users', U, 'sessions'), where('endAt', '>', 0))));
+  });
+
+  test('observer unlock; user cannot unlock a remote session', async () => {
+    await seedBase('active');
+    await seed((d) => sess(d, 'r2', { status: 'pending' }));
+    await assertFails(updateDoc(doc(db(U), 'users', U, 'sessions', 'r2'), { status: 'ended', endedBy: U }));
+    await assertSucceeds(updateDoc(doc(db(O), 'users', U, 'sessions', 'r2'), { status: 'ended', endedBy: O }));
+  });
+
+  test('links: observer lists their users by observerUid; others cannot list; own link readable when missing', async () => {
+    await seedBase('pending');
+    assert.equal((await assertSucceeds(getDocs(query(collection(db(O), 'links'), where('observerUid', '==', O))))).size, 1);
+    await assertFails(getDocs(query(collection(db(X), 'links'), where('observerUid', '==', O))));
+    await assertSucceeds(getDoc(doc(db(X), 'links', X)));
+  });
+
+  test('observer declines removal by clearing removalRequestedAt', async () => {
+    await seedBase('removal_requested', { removalRequestedAt: Timestamp.now() });
+    await assertSucceeds(updateDoc(doc(db(O), 'links', U), { status: 'active', removalRequestedAt: deleteField() }));
+  });
+
+  test('observer manages their own schedule on the user; user cannot delete it; user reads it', async () => {
+    await seedBase('active');
+    const sc = (uid) => doc(db(uid), 'users', U, 'schedules', 'sc1');
+    const body = { createdBy: O, mode: 'full', oneTimeDate: '2030-01-01', startMin: 540, endMin: 600, tz: 'Asia/Dhaka', enabled: true };
+    await assertSucceeds(setDoc(sc(O), body));
+    await assertSucceeds(getDoc(sc(U)));
+    await assertFails(deleteDoc(sc(U)));
+    await assertSucceeds(updateDoc(sc(O), { enabled: false }));
+    await assertSucceeds(deleteDoc(sc(O)));
   });
 });
 
