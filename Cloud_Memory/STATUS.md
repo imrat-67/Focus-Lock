@@ -7,7 +7,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T01 Android SDK at ~/Android/Sdk (platform 36, build-tools 36.1.0, adb 1.0.41), ANDROID_HOME in ~/.bashrc
 - [x] T02 Skeleton builds: debug APK OK (Compose hello screen, google-services plugin applied); versions in D16-D18
 - [x] T03 Firebase live: project, Android app, SHA-1, Google sign-in enabled, Firestore (asia-south1), placeholder deny-all rules deployed, app/google-services.json has oauth clients (see D15)
-- [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in not yet tested on a phone
+- [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in VERIFIED on vivo Y29 (profile + friend code created in Firestore)
 - [ ] T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 - [ ] T06 Lock engine: Accessibility detect, LockActivity, Full Lock, call/alarm/emergency-call exemptions (LOCK-1..4,9)
 - [ ] T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)

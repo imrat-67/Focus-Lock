@@ -1,7 +1,7 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Pair the phone for Wireless debugging (vivo Y29, see D22), then tell Claude "paired". Claude runs `adb pair/connect`, installs the APK, and tests sign-in.
+- None. Phone paired via Wireless debugging (re-pair via Developer options if `adb devices` is empty). Sign-in works on device.
 
 ## Do now: T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 1. Read SRS UI-2, LOCK-6,7 and docs/ARCHITECTURE.md "Runtime pieces".
