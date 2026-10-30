@@ -1,7 +1,208 @@
 rules_version = '2';
-// Placeholder (T03): deny everything. Real rules are written and tested in T04.
+// Focus Lock Firestore rules (T04). Default deny. See docs/ARCHITECTURE.md "Security Rules principles".
+// Tested with the emulator: cd rules-tests && npm test
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+    function linkPath(uid) { return /databases/$(database)/documents/links/$(uid); }
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+
+    // Caller is the active Observer of `uid` (removal_requested still counts: LINK-6/7).
+    function isObserverOf(uid) {
+      return signedIn() && exists(linkPath(uid))
+        && get(linkPath(uid)).data.observerUid == request.auth.uid
+        && get(linkPath(uid)).data.status in ['active', 'removal_requested'];
+    }
+    function isSelfOrObserver(uid) { return isSelf(uid) || isObserverOf(uid); }
+
+    // Caller is a User whose Observer (any link status) is `obsUid`: lets them read that Observer's profile.
+    function myObserverIs(obsUid) {
+      return signedIn() && exists(linkPath(request.auth.uid))
+        && get(linkPath(request.auth.uid)).data.observerUid == obsUid;
+    }
+
+    function str(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    // ---------- users/{uid} ----------
+    match /users/{uid} {
+      function validNew(d) {
+        return d.keys().hasOnly(['displayName', 'email', 'friendCode', 'createdAt', 'deviceId'])
+          && d.keys().hasAll(['displayName', 'email', 'friendCode', 'createdAt', 'deviceId'])
+          && str(d.displayName, 100)
+          && d.email is string && d.email.size() <= 320
+          && d.friendCode is string && d.friendCode.matches('^[A-HJ-NP-Z2-9]{8}$')
+          && str(d.deviceId, 128)
+          && d.createdAt == request.time;
+      }
+      allow get: if isSelf(uid) || isObserverOf(uid) || myObserverIs(uid);
+      allow list: if false;
+      allow create: if isSelf(uid) && validNew(request.resource.data);
+      // friendCode, createdAt and deviceId are immutable (AUTH-2: phone change is a later, explicit flow).
+      allow update: if isSelf(uid) && onlyChanges(['displayName', 'email'])
+        && str(request.resource.data.displayName, 100)
+        && request.resource.data.email is string && request.resource.data.email.size() <= 320;
+      allow delete: if false;
+
+      // Launchable-app list uploaded by the phone (FMT-3).
+      match /apps/{docId} {
+        allow read: if isSelfOrObserver(uid);
+        allow write: if isSelf(uid) && docId == 'list'
+          && request.resource.data.keys().hasOnly(['items', 'updatedAt'])
+          && request.resource.data.items is list && request.resource.data.items.size() <= 1500
+          && request.resource.data.updatedAt == request.time;
+      }
+
+      // Formats: both User and Observer may create/edit/delete (FMT-2).
+      match /formats/{fid} {
+        function validFormat(d) {
+          return d.keys().hasOnly(['name', 'packages', 'createdBy'])
+            && d.keys().hasAll(['name', 'packages', 'createdBy'])
+            && str(d.name, 60)
+            && d.packages is list && d.packages.size() <= 500;
+        }
+        allow read: if isSelfOrObserver(uid);
+        allow create: if isSelfOrObserver(uid) && validFormat(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update: if isSelfOrObserver(uid) && validFormat(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy;
+        allow delete: if isSelfOrObserver(uid);
+      }
+
+      // Schedules: only the creator edits/deletes (SCH-2). Password pool only on Observer-created ones (UNL-6).
+      match /schedules/{sid} {
+        function validSchedule(d) {
+          return d.keys().hasOnly(['createdBy', 'mode', 'formatId', 'packages', 'oneTimeDate', 'days',
+                                   'startMin', 'endMin', 'tz', 'enabled', 'pwPool'])
+            && d.keys().hasAll(['createdBy', 'mode', 'startMin', 'endMin', 'tz', 'enabled'])
+            && d.mode in ['full', 'apps']
+            && d.startMin is int && d.startMin >= 0 && d.startMin < 1440
+            && d.endMin is int && d.endMin >= 0 && d.endMin < 1440
+            && str(d.tz, 64)
+            && d.enabled is bool
+            && (!('formatId' in d) || str(d.formatId, 128))
+            && (!('packages' in d) || (d.packages is list && d.packages.size() <= 500))
+            && (!('oneTimeDate' in d) || (d.oneTimeDate is string && d.oneTimeDate.size() == 10))
+            && (!('days' in d) || (d.days is list && d.days.size() <= 7))
+            && (!('pwPool' in d) || (d.pwPool is map && d.pwPool.size() <= 40));
+        }
+        allow read: if isSelfOrObserver(uid);
+        allow create: if isSelfOrObserver(uid) && validSchedule(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && (!isSelf(uid) || !('pwPool' in request.resource.data));
+        allow update: if isSelfOrObserver(uid) && resource.data.createdBy == request.auth.uid
+          && validSchedule(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && (!isSelf(uid) || !('pwPool' in request.resource.data));
+        allow delete: if isSelfOrObserver(uid) && resource.data.createdBy == request.auth.uid;
+      }
+
+      // Sessions: see ARCHITECTURE. The User can never end or edit an Observer-created session.
+      match /sessions/{sid} {
+        function validSession(d) {
+          return d.keys().hasOnly(['createdBy', 'mode', 'kind', 'packages', 'startAt', 'endAt', 'status',
+                                   'pwHash', 'pwSalt', 'remoteInstant'])
+            && d.keys().hasAll(['createdBy', 'mode', 'kind', 'startAt', 'endAt', 'status', 'remoteInstant'])
+            && d.mode in ['full', 'apps']
+            && d.kind in ['instant', 'scheduled']
+            && d.status in ['pending', 'active']
+            && d.startAt is number && d.endAt is number
+            && d.endAt > d.startAt && d.endAt - d.startAt <= 43200000      // LOCK-5: max 12 h
+            && d.endAt > request.time.toMillis()
+            && d.remoteInstant is bool
+            && (!('packages' in d) || (d.packages is list && d.packages.size() <= 500))
+            && (d.mode == 'full' || ('packages' in d && d.packages.size() > 0))
+            && (!('pwHash' in d) || str(d.pwHash, 128))
+            && (!('pwSalt' in d) || str(d.pwSalt, 128));
+        }
+        allow read: if isSelfOrObserver(uid);
+        allow create: if isSelfOrObserver(uid) && validSession(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && (!isSelf(uid) || (!('pwHash' in request.resource.data) && request.resource.data.remoteInstant == false));
+
+        allow update: if
+          // End: the Observer may end any session of their User; the User only their own self-lock.
+          ((isObserverOf(uid) || (isSelf(uid) && resource.data.createdBy == uid))
+            && resource.data.status != 'ended'
+            && onlyChanges(['status', 'endedBy'])
+            && request.resource.data.status == 'ended'
+            && request.resource.data.endedBy == request.auth.uid)
+          // Regenerate password (UNL-5): only the Observer who created the session.
+          || (isObserverOf(uid) && resource.data.createdBy == request.auth.uid
+            && onlyChanges(['pwHash', 'pwSalt'])
+            && str(request.resource.data.pwHash, 128) && str(request.resource.data.pwSalt, 128))
+          // Informational flag written by the User's phone after a local password unlock.
+          || (isSelf(uid) && onlyChanges(['passwordUsed']) && request.resource.data.passwordUsed == true);
+
+        allow delete: if isSelfOrObserver(uid) && resource.data.createdBy == request.auth.uid;
+      }
+    }
+
+    // ---------- lookup/{key}: get-only, authed, immutable ----------
+    // key is either sha256(lowercase email) hex of the caller's own verified email, or the caller's friendCode.
+    match /lookup/{key} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == request.auth.uid
+        && (
+          (key.size() == 64 && request.auth.token.email_verified == true
+            && key == hashing.sha256(request.auth.token.email.lower().toUtf8()).toHexString())
+          || (key.size() == 8
+            && getAfter(userPath(request.auth.uid)).data.friendCode == key)
+        );
+      allow update, delete: if false;
+    }
+
+    // ---------- links/{userUid}: one Observer per User ----------
+    match /links/{userUid} {
+      allow get: if isSelf(userUid) || (signedIn() && resource.data.observerUid == request.auth.uid);
+      // Observers list their Users with where('observerUid','==',myUid).
+      allow list: if signedIn() && resource.data.observerUid == request.auth.uid;
+
+      // Observer requests; doc id == userUid so a second Observer cannot be added (LINK-4).
+      allow create: if signedIn() && request.auth.uid != userUid
+        && exists(userPath(userUid))
+        && request.resource.data.keys().hasOnly(['observerUid', 'status', 'createdAt'])
+        && request.resource.data.observerUid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time;
+
+      allow update:
+        // User accepts.
+        if (isSelf(userUid) && resource.data.status == 'pending' && onlyChanges(['status'])
+            && request.resource.data.status == 'active')
+        // User asks for removal (LINK-6).
+        || (isSelf(userUid) && resource.data.status == 'active'
+            && onlyChanges(['status', 'removalRequestedAt'])
+            && request.resource.data.status == 'removal_requested'
+            && request.resource.data.removalRequestedAt == request.time)
+        // Observer declines the removal request: back to active.
+        || (signedIn() && resource.data.observerUid == request.auth.uid
+            && resource.data.status == 'removal_requested'
+            && request.resource.data.keys().hasOnly(['observerUid', 'status', 'createdAt'])
+            && request.resource.data.status == 'active'
+            && request.resource.data.observerUid == resource.data.observerUid
+            && request.resource.data.createdAt == resource.data.createdAt);
+
+      allow delete:
+        // User declines a pending request.
+        if (isSelf(userUid) && resource.data.status == 'pending')
+        // Observer cancels a pending request.
+        || (signedIn() && resource.data.observerUid == request.auth.uid && resource.data.status == 'pending')
+        // Observer accepts removal.
+        || (signedIn() && resource.data.observerUid == request.auth.uid && resource.data.status == 'removal_requested')
+        // User completes removal after 7 days without an answer (LINK-6).
+        || (isSelf(userUid) && resource.data.status == 'removal_requested'
+            && request.time > resource.data.removalRequestedAt + duration.value(7, 'd'));
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
