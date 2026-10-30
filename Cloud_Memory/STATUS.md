@@ -11,7 +11,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T05 Permissions checklist, CoreService (foreground, verified on vivo), encrypted SessionStore + tests; checklist UI title overlaps status bar (fix inset, T13)
 - [x] T06 Lock engine: LockPolicy+tests, LockActivity, accessibility enforcement; verified on emulator (Full/Apps lock, call exemption, emergency button, expiry, back/home); real-phone recheck in T13
 - [x] T07 Installed-app list + upload (AppListSync), Formats model/repo/UI + picker; formats CRUD confirmed by user on phone; upload log not captured (verify in T09 when Observer reads list)
-- [ ] T08 Instant + Scheduled, alarms, timer, reboot persistence, time-tamper guard (LOCK-5,7,8, SCH-1..3)
+- [x] T08 Instant + Scheduled locks, alarms, timer, boot rebase, ServerClock; Lock now VERIFIED on vivo (needed overlay perm D24 + re-cover on stop); reboot/clock-tamper/scheduled-start/notice NOT yet device-tested -> T13 pass
 - [ ] T09 Link flow: request/accept/remove, lookup, 7-day auto-complete (LINK-1..7)
 - [ ] T10 Remote lock/unlock via live listeners, warnings/notifications (SCH-4, UNL-1, NOT-1..5)
 - [ ] T11 Emergency password (hash, cooldown, pool, regenerate) + self-lock emergency exit (UNL-2..7)
@@ -19,7 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T08
-Plan/steps: [x] a) pure: TimeModel (serverNow, endElapsed, boot rebase) + ScheduleExpander + tests (12 pass; files in time/) · [x] b) LocalSession.lastRemainingMs + time/ServerClock (HTTPS Date header, invalidate() for boot) · [x] c) lock/SessionPlan(+tests), lock/SessionEngine, service/SessionReceivers (End alarm, Boot), CoreService heartbeat+clock sync; build+46 tests OK (note for T11: boot rebase resets cooldown) · [x] d) Lock-now UI (ui/LockNow.kt, Home button, MainActivity wiring; build OK, not yet run on device) · [x] e1) data/Schedules.kt (model+codec+repo, days=ISO ints 1..7, packages copied from format) + ScheduleScheduler (DONE build+52 tests OK; elapsed-based exact alarms: 10-min notice + start; local cache schedules.json; ScheduleSync listener in CoreService; boot rearm) · [x] e2) (build OK) Schedules UI (list, create: mode/apps/days|date/start/end) · [~] f) installed on vivo, app launches, Lock now + Schedules buttons visible; WAITING user device test (see NEXT) then reboot/clock-change test
-Files touched: app/src/main/** (time/, lock/, service/, data/, ui/), AndroidManifest.xml, strings.xml, tests
+Task: T09
+Plan/steps: [ ] a) read SRS LINK-1..7 + existing LinkRepository/rules
+Files touched: none yet
 Last commit: see git log

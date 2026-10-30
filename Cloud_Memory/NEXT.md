@@ -1,12 +1,10 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Re-test on vivo (new build installed): Lock now 5 min Full; press Home and Recents several times. Lock screen should now return in well under 1 s. Also test the emergency 112/999 button: the call screen must still show (lock must not cover it). Tell me the result.
+- none right now
 
-## Do now: finish T08 step f (fix for "Home lets you browse then lock pops late" is installed, needs re-test)
-1. After user feedback: fix issues, then mark T08 DONE in STATUS (one line), commit feat(T08), push.
-2. Not yet verified: boot rebase, clock-change tamper, scheduled start, notice notification, Firestore upload of self session (check Firestore users/{uid}/sessions).
-3. Then T09 (link flow).
+## Do now: T09 link flow
+Read SRS LINK-1..7, LinkRepository, rules; plan steps into CHECKPOINT; build pure logic first with tests.
 
 ## Notes
 - Debug lock: `adb shell am broadcast -a com.imrat.focuslock.DEBUG_LOCK -n com.imrat.focuslock/.DebugSessionReceiver --es mode full|apps --ei secs 120 --es pkgs a.b,c.d` ; DEBUG_CLEAR ends it (phone: adb is wireless, ~/Android/Sdk/platform-tools/adb).
