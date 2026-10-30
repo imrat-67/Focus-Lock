@@ -20,6 +20,6 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T07
-Plan/steps: [ ] a) data/Apps.kt (AppEntry, codec, normalize, Format) + tests · [ ] b) AppListRepository + FormatRepository · [ ] c) InstalledApps + AppListSync in CoreService (on start + package add/remove) · [ ] d) AppPicker + FormatsScreen + Home button · [ ] e) build, test on emulator
-Files touched: app/src/main/** (data/, lock/, service/CoreService.kt, ui/, MainActivity), AndroidManifest.xml (queries), strings.xml, tests
+Plan/steps: [x] a) codecs+tests (pass) · [x] b) repositories · [x] c) InstalledApps + AppListSync in CoreService · [x] d) AppPicker + FormatsScreen + Home button · [~] e) installed on phone, but app shows signed-out ("Sign-in failed"); needs user to tap Continue with Google, then check logcat `AppListSync: uploaded N apps` and Formats create/edit/delete (emulator cannot sign in: no Play services)
+Files touched: done, all committed
 Last commit: see git log

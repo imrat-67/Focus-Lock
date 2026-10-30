@@ -1,9 +1,10 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- None now. (Final real-phone test is T13; enable Accessibility via the app's Grant button then.)
+- On the phone: open Focus Lock, tap Continue with Google (app showed 'Sign-in failed' after reinstall). Then Home > Formats: create one, edit, delete.
 
-## Do now: T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)
+## Do now: finish T07 step e (see STATUS CHECKPOINT), then T08. T07 code is done.
+## (T07 original plan)
 1. `grep -n "FMT-\|LOCK-3" SRS.md`; read ARCHITECTURE data model.
 2. Write checkpoint, then: installed-app list (PackageManager, launchable apps), app picker UI, upload list for Observer, Formats model/repo.
 3. Test on emulator: `./gradlew installDebug` with `ANDROID_SERIAL=emulator-5554` after starting it (see D23); enable a11y with `adb shell settings put secure enabled_accessibility_services com.imrat.focuslock/com.imrat.focuslock.service.LockAccessibilityService`.
