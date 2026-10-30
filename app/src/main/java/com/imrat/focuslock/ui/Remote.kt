@@ -87,8 +87,9 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                 live.filter { it.status == SessionStatus.ENDED || it.passwordUsed }.forEach { container.vault.remove(it.id) }
             }
             val running = live.filter { it.status != SessionStatus.ENDED && !it.passwordUsed }
-            val lockedNow = running.any { it.startAtMs <= clock.now() && it.endAtMs > clock.now() }
-            AppScreen(name, onBack, actions = { StatusPill(lockedNow); Spacer(Modifier.padding(end = 12.dp)) }) {
+            val lockState = LockState.of(running.filter { it.startAtMs <= clock.now() && it.endAtMs > clock.now() }.map { it.mode })
+            val lockedNow = lockState != LockState.UNLOCKED
+            AppScreen(name, onBack, actions = { StatusPill(lockState); Spacer(Modifier.padding(end = 12.dp)) }) {
                 Spacer(Modifier.height(8.dp))
                 FLCard(Modifier.padding(bottom = 12.dp), onClick = { page = RemotePage.LOCK }) {
                     Text(stringResource(R.string.h_instant), style = MaterialTheme.typography.titleMedium)

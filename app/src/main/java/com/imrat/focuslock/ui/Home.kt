@@ -62,18 +62,36 @@ internal fun personName(uid: String, users: UserRepository): String {
     return n
 }
 
-@Composable
-internal fun StatusPill(locked: Boolean) {
-    val color = if (locked) LockedRed else UnlockedGreen
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        StatusDot(color)
-        Spacer(Modifier.width(6.dp))
-        Text(stringResource(if (locked) R.string.h_locked else R.string.h_unlocked), style = MaterialTheme.typography.bodySmall, color = color)
+/** What a device is doing right now: free, fully locked, or only the chosen apps locked. */
+enum class LockState {
+    UNLOCKED, FULL, APPS;
+
+    companion object {
+        fun of(modes: Collection<com.imrat.focuslock.data.LockMode>): LockState = when {
+            com.imrat.focuslock.data.LockMode.FULL in modes -> FULL
+            modes.isNotEmpty() -> APPS
+            else -> UNLOCKED
+        }
     }
 }
 
 @Composable
-internal fun DeviceCard(title: String, subtitle: String?, icon: ImageVector, locked: Boolean?, onClick: (() -> Unit)?, extra: @Composable ColumnScope.() -> Unit = {}) {
+internal fun StatusPill(state: LockState) {
+    val color = if (state == LockState.UNLOCKED) UnlockedGreen else LockedRed
+    val label = when (state) {
+        LockState.UNLOCKED -> R.string.h_unlocked
+        LockState.FULL -> R.string.h_locked_full
+        LockState.APPS -> R.string.h_locked_apps
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        StatusDot(color)
+        Spacer(Modifier.width(6.dp))
+        Text(stringResource(label), style = MaterialTheme.typography.bodySmall, color = color)
+    }
+}
+
+@Composable
+internal fun DeviceCard(title: String, subtitle: String?, icon: ImageVector, state: LockState?, onClick: (() -> Unit)?, extra: @Composable ColumnScope.() -> Unit = {}) {
     FLCard(modifier = Modifier.padding(bottom = 12.dp), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(icon)
@@ -82,7 +100,7 @@ internal fun DeviceCard(title: String, subtitle: String?, icon: ImageVector, loc
                 Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 1)
                 if (subtitle != null) Subtle(subtitle)
             }
-            if (locked != null) StatusPill(locked)
+            if (state != null) StatusPill(state)
         }
         extra()
     }
@@ -117,9 +135,11 @@ internal fun RemoteRow(l: Link, entry: RemoteEntry?, now: Long, container: AppCo
         entry == null -> DeviceCard(who, stringResource(R.string.h_accepted_name), Icons.Filled.Person, null, { onName(l.userUid) })
         else -> {
             val live by remember(l.userUid) { container.sessions.observeLive(l.userUid, System.currentTimeMillis()) }.collectAsStateWithLifecycle(emptyList())
-            val locked = live.any { it.status != SessionStatus.ENDED && it.startAtMs <= now && it.endAtMs > now }
+            val running = live.filter { it.status != SessionStatus.ENDED && it.startAtMs <= now && it.endAtMs > now }
+            val state = LockState.of(running.map { it.mode })
+            val locked = state != LockState.UNLOCKED
             val sub = if (l.status == LinkStatus.REMOVAL_REQUESTED) stringResource(R.string.h_release_asked) else null
-            DeviceCard(entry.name, sub, Icons.Filled.Phone, locked, { onOpen(l.userUid, entry.name) }) {
+            DeviceCard(entry.name, sub, Icons.Filled.Phone, state, { onOpen(l.userUid, entry.name) }) {
                 if (l.status == LinkStatus.REMOVAL_REQUESTED) {
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

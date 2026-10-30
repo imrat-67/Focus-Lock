@@ -47,12 +47,12 @@
     <string name="lock_password_hint">Password from your Observer</string>
     <string name="lock_unlock">Unlock</string>
     <string name="lock_password_pending">Password unlock is not available yet.</string>
-    <string name="formats_title">Formats</string>
-    <string name="formats_open">Formats (app lists)</string>
-    <string name="formats_new">New format</string>
-    <string name="formats_empty">No formats yet. A format is a named list of apps you can lock in one tap.</string>
+    <string name="formats_title">App lists</string>
+    <string name="formats_open">App lists</string>
+    <string name="formats_new">New list</string>
+    <string name="formats_empty">No app lists yet. Save a set of apps to lock them in one tap.</string>
     <string name="formats_apps_count">%d apps</string>
-    <string name="format_name">Format name</string>
+    <string name="format_name">List name</string>
     <string name="format_search">Search apps</string>
     <string name="format_selected">%d selected</string>
     <string name="format_save">Save</string>
@@ -81,6 +81,7 @@
     <string name="sched_once">One time</string>
     <string name="sched_from">From</string>
     <string name="sched_to">To</string>
+    <string name="sched_date">Date: %s</string>
     <string name="sched_rules">Longest lock is 24 hours. If the end time is earlier than the start, it ends the next day.</string>
     <string name="perm_overlay">Display over other apps</string>
     <string name="perm_overlay_why">Lets the lock screen open instantly when you press Home or switch apps. Without it some phones delay the lock screen.</string>
@@ -135,7 +136,9 @@
     <string name="remote_sched_pw_missing">No password yet for this lock. Stay online for a moment and it will be made; until then only Unlock ends it.</string>
     <string name="remote_pw_missing">Password not on this phone. Use New password to make one.</string>
     <string name="h_this_device">This device</string>
-    <string name="h_locked">Locked</string>
+    <string name="h_locked_full">Full lock</string>
+    <string name="h_locked_apps">Selected apps locked</string>
+    <string name="toast_apps_lock_on">App lock is on</string>
     <string name="h_unlocked">Unlocked</string>
     <string name="h_add_device">Add device</string>
     <string name="h_empty_title">No devices yet</string>

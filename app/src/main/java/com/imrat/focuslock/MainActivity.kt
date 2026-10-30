@@ -15,6 +15,9 @@ import com.imrat.focuslock.lock.SessionCache
 import android.os.SystemClock
 import com.imrat.focuslock.ui.SchedulesScreen
 import com.imrat.focuslock.lock.LockActivity
+import com.imrat.focuslock.R
+import com.imrat.focuslock.data.LockMode
+import com.imrat.focuslock.ui.LockState
 import com.imrat.focuslock.lock.SessionEngine
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -70,12 +73,14 @@ class MainActivity : ComponentActivity() {
                             var remoteName by rememberSaveable { mutableStateOf("") }
                             val store = remember(s.profile.uid) { DeviceStore(this@MainActivity, s.profile.uid) }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
-                            val lockActiveNow by produceState(false) { // AUTH-3: re-check every second
+                            val lockStateNow by produceState(LockState.UNLOCKED) { // AUTH-3: re-check every second
                                 while (true) {
-                                    value = SessionCache(this@MainActivity).get().any { it.endElapsedMs > SystemClock.elapsedRealtime() }
+                                    val t = SystemClock.elapsedRealtime()
+                                    value = LockState.of(SessionCache(this@MainActivity).get().filter { it.endElapsedMs > t }.map { it.mode })
                                     kotlinx.coroutines.delay(1_000)
                                 }
                             }
+                            val lockActiveNow = lockStateNow != LockState.UNLOCKED
                             val uid = s.profile.uid
                             if (showPerms) {
                                 PermissionsScreen { showPerms = false }
@@ -93,7 +98,7 @@ class MainActivity : ComponentActivity() {
                                 }
                                 "this" -> {
                                     BackHandler { route = "home" }
-                                    ThisDeviceScreen(lockActiveNow, { route = "instant" }, { route = "schedules" }, { route = "formats" }) { route = "home" }
+                                    ThisDeviceScreen(lockStateNow, { route = "instant" }, { route = "schedules" }, { route = "formats" }) { route = "home" }
                                 }
                                 "schedules" -> {
                                     BackHandler { route = "this" }
@@ -111,12 +116,16 @@ class MainActivity : ComponentActivity() {
                                                 SessionEngine(this@MainActivity).startSelfInstant(uid, mode, pkgs, ms)
                                             }
                                             route = "this"
-                                            if (started != null) startActivity(LockActivity.intent(this@MainActivity))
+                                            if (started != null) {
+                                                // Only a Full Lock covers Focus Lock itself; an Apps Lock just confirms (T14g).
+                                                if (started.mode == LockMode.FULL) startActivity(LockActivity.intent(this@MainActivity))
+                                                else android.widget.Toast.makeText(this@MainActivity, R.string.toast_apps_lock_on, android.widget.Toast.LENGTH_LONG).show()
+                                            }
                                         }
                                     }) { route = "this" }
                                 }
                                 else -> HomeScreen(
-                                    s.profile, Perms.missing(this@MainActivity).size, lockActiveNow, container, store,
+                                    s.profile, Perms.missing(this@MainActivity).size, lockStateNow, container, store,
                                     { route = "add" }, { route = "this" }, { u, n -> remoteUid = u; remoteName = n },
                                     { showPerms = true },
                                 ) { vm.signOut(this@MainActivity) }

@@ -46,8 +46,8 @@ fun LockNowScreen(
     onBack: () -> Unit,
 ) {
     var mode by remember { mutableStateOf(LockMode.FULL) }
-    var hours by remember { mutableIntStateOf(1) }
-    var minutes by remember { mutableIntStateOf(0) }
+    var hours by remember { mutableIntStateOf(0) }
+    var minutes by remember { mutableIntStateOf(1) }
     var selected by remember { mutableStateOf(setOf<String>()) }
     val saved by remember(uid) { formats.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     val total = hours * 60 + minutes

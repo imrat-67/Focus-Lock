@@ -14,6 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -106,20 +110,48 @@ private fun TimeField(label: String, minute: Int, onChange: (Int) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateField(date: LocalDate, today: LocalDate, onChange: (LocalDate) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val fmt = remember { java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM) }
+    OutlinedButton(onClick = { open = true }) { Text(stringResource(R.string.sched_date, date.format(fmt))) }
+    if (open) {
+        val zone = java.time.ZoneOffset.UTC
+        val minMs = today.atStartOfDay(zone).toInstant().toEpochMilli()
+        val st = rememberDatePickerState(
+            initialSelectedDateMillis = date.atStartOfDay(zone).toInstant().toEpochMilli(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis >= minMs
+            },
+        )
+        DatePickerDialog(
+            onDismissRequest = { open = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    st.selectedDateMillis?.let { onChange(java.time.Instant.ofEpochMilli(it).atZone(zone).toLocalDate()) }
+                    open = false
+                }) { Text(stringResource(R.string.format_save)) }
+            },
+            dismissButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.format_cancel)) } },
+        ) { DatePicker(st) }
+    }
+}
+
 @Composable
 private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, formats: FormatRepository, onCancel: () -> Unit, onSave: (Schedule) -> Unit) {
     var mode by remember { mutableStateOf(LockMode.FULL) }
     var repeating by remember { mutableStateOf(true) }
     var days by remember { mutableStateOf(setOf<Int>()) }
-    var dateOffset by remember { mutableStateOf(0) }
+    val today = remember { LocalDate.now() }
+    var date by remember { mutableStateOf(today) }
     var start by remember { mutableStateOf(9 * 60) }
     var end by remember { mutableStateOf(11 * 60) }
     var selected by remember { mutableStateOf(setOf<String>()) }
     val saved by remember(uid) { formats.observe(uid) }.collectAsStateWithLifecycle(emptyList())
-    val today = remember { LocalDate.now() }
     val draft = Schedule(
         "", myUid, mode, if (mode == LockMode.APPS) selected.toList() else emptyList(),
-        if (repeating) days else emptySet(), if (repeating) null else today.plusDays(dateOffset.toLong()).toString(),
+        if (repeating) days else emptySet(), if (repeating) null else date.toString(),
         start, end, ZoneId.systemDefault().id, true,
     )
     val ok = draft.isUsable()
@@ -144,11 +176,7 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
                 }
             }
         } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                (0..4).forEach { o ->
-                    FilterChip(dateOffset == o, { dateOffset = o }, { Text(today.plusDays(o.toLong()).let { "${it.dayOfMonth}/${it.monthValue}" }) })
-                }
-            }
+            DateField(date, today) { date = it }
         }
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

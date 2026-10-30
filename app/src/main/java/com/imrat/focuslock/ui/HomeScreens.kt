@@ -53,13 +53,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    profile: UserProfile, missingPerms: Int, lockActive: Boolean, container: AppContainer, store: DeviceStore,
+    profile: UserProfile, missingPerms: Int, lockState: LockState, container: AppContainer, store: DeviceStore,
     onAdd: () -> Unit, onOpenThis: () -> Unit, onOpenRemote: (String, String) -> Unit, onPerms: () -> Unit, onSignOut: () -> Unit,
 ) {
     val myDevice by store.myDevice.collectAsStateWithLifecycle()
     val remotes by store.remotes.collectAsStateWithLifecycle()
     val people by remember { container.links.observeUsersOf(profile.uid) }.collectAsStateWithLifecycle(emptyList())
     val incoming by remember { container.links.observe(profile.uid) }.collectAsStateWithLifecycle(null)
+    val lockActive = lockState != LockState.UNLOCKED
+    val hasRequest = incoming?.status == com.imrat.focuslock.data.LinkStatus.PENDING
     var sheet by remember { mutableStateOf(false) }
     var naming by remember { mutableStateOf<String?>(null) }
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -67,7 +69,13 @@ fun HomeScreen(
 
     AppScreen(
         stringResource(R.string.app_name), scroll = false,
-        actions = { IconButton(onClick = { sheet = true }) { Icon(Icons.Filled.AccountCircle, stringResource(R.string.h_profile)) } },
+        actions = {
+            IconButton(onClick = { sheet = true }) {
+                BadgedBox(badge = { if (hasRequest) Badge(containerColor = LockedRed) }) {
+                    Icon(Icons.Filled.AccountCircle, stringResource(R.string.h_profile))
+                }
+            }
+        },
     ) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             if (!myDevice && people.isEmpty()) {
@@ -79,7 +87,7 @@ fun HomeScreen(
             } else {
                 LazyColumn(Modifier.fillMaxSize()) {
                     if (myDevice) item("this") {
-                        DeviceCard(stringResource(R.string.h_this_device), null, Icons.Filled.Phone, lockActive, onOpenThis)
+                        DeviceCard(stringResource(R.string.h_this_device), null, Icons.Filled.Phone, lockState, onOpenThis)
                     }
                     items(people, key = { it.userUid }) { l ->
                         RemoteRow(l, remotes.firstOrNull { it.id == l.userUid }, now, container, onOpenRemote) { naming = it }
@@ -210,8 +218,8 @@ fun AddRemoteScreen(myUid: String, container: AppContainer, onSent: () -> Unit, 
 }
 
 @Composable
-fun ThisDeviceScreen(lockActive: Boolean, onInstant: () -> Unit, onSchedule: () -> Unit, onFormats: () -> Unit, onBack: () -> Unit) {
-    AppScreen(stringResource(R.string.h_this_device), onBack, actions = { StatusPill(lockActive); Spacer(Modifier.padding(end = 12.dp)) }) {
+fun ThisDeviceScreen(lockState: LockState, onInstant: () -> Unit, onSchedule: () -> Unit, onFormats: () -> Unit, onBack: () -> Unit) {
+    AppScreen(stringResource(R.string.h_this_device), onBack, actions = { StatusPill(lockState); Spacer(Modifier.padding(end = 12.dp)) }) {
         Spacer(Modifier.height(8.dp))
         FLCard(Modifier.padding(bottom = 12.dp), onClick = onInstant) {
             Text(stringResource(R.string.h_instant), style = MaterialTheme.typography.titleMedium)

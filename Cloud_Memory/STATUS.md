@@ -23,5 +23,5 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T14g user feedback after device test (T14a-f DONE, installed on vivo). Items: (1) incoming link request -> system notification + red dot on Home profile icon while pending request exists (2) rename 'Format (App lock/App list)' -> 'App list' everywhere (3) APPS-mode lock must NOT cover Focus Lock itself (only Full lock does); show 'App lock active' snackbar/notification instead (4) device status shows lock TYPE: Full lock / App lock (selected apps) (5) instant lock default = 1 min (6) schedule: calendar date picker instead of fixed next-3-4-days (7) polish: concise text, aligned, consistent; update SRS/README/strings/tests/docs for every change.
-Steps: [ ] 1 [ ] 2 [ ] 3 [ ] 4 [ ] 5 [ ] 6 [ ] 7 build+tests+install
+Steps (uncommitted code found at session start): [~] 1 dot+HIGH channel in code, verify notif for NEW_REQUEST [~] 2 strings renamed, grep leftovers [~] 3 Toast/notif done for self+remote start, VERIFY LockPolicy/accessibility doesn't cover FL in APPS mode [x] 4 LockState pill [x] 5 default 1 min [ ] 6 calendar date picker [ ] 7 SRS/README/docs sweep + tests + build + install
 Files: grep as needed
