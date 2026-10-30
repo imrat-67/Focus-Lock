@@ -80,6 +80,11 @@ class SessionEngine(ctx: Context) {
         markDone(id)
     }
 
+    /** UNL-5: Observer regenerated the password. Adopt the new hash; the attempt counter restarts, a running cooldown stays. */
+    @Synchronized
+    fun updateHash(id: String, hash: String, salt: String) =
+        store.update(id) { it.copy(pwHash = hash, pwSalt = salt, failedAttempts = 0) }
+
     /** Lock-screen password try (UNL-3, UNL-4). Success ends the session for good. Verifies off the main thread, please. */
     @Synchronized
     fun attemptUnlock(id: String, entered: String): UnlockPolicy.Outcome {

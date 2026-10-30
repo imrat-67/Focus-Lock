@@ -25,8 +25,12 @@ Plan T11a:
 [x] 1 pure PasswordCrypto (6 digits, salt, PBKDF2 100k, const-time verify) + UnlockPolicy (5 wrong->10 min cooldown, boot keeps cooldown) + tests
 [x] 2 LocalSession.exitAtElapsedMs + codec; SessionStore tests still pass
 [x] 3 lock screen unlock + self-lock emergency exit + doneIds (builds, unit tests pass; device check in step 5 via debug extras --es pw / --ez self)
-[ ] 4 Observer: PasswordVault (encrypted local), generate on remote lock, show/copy + Regenerate (UNL-5); RemoteSync handles hash updates + passwordUsed
-[ ] 5 build, tests, install, device self-check with debug lock
+[x] 4 Observer: (rules already allow create w/ pwHash + Observer regenerate pwHash/pwSalt)
+  [x] 4a PasswordVault (security/, encrypted id->plain via SecretBox) + test
+  [x] 4b SessionRepository.regenerate + RemoteSync.rehash plan (+test) + SessionEngine.updateHash + CoreService applies it
+  [x] 4c Remote.kt: fresh pw on remote lock (newId+createWithId, vault.put), show/copy pw + Regenerate per running session; strings
+  [x] 4d build + tests
+[~] 5 install on vivo (adb wireless connected), self-check: debug lock with --es pw 123456 (wrong x5 -> cooldown, right -> unlocks, no restart) and --ez self true (Emergency exit 5 min). Steps 1-4 committed; 92 unit tests pass
 Plan T11b: Schedule.pwPool field+codec, Observer top-up 14 occurrences, startScheduled uses pool
 Files touched: none yet
 Last commit: see git log

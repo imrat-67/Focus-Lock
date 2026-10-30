@@ -31,6 +31,22 @@ class RemoteSyncTest {
         assertTrue(p.starts.isEmpty())
     }
 
+    @Test fun usedPasswordNeverRestarts() {
+        val used = s("a", "obs", SessionStatus.ACTIVE, 0, 900_000).copy(passwordUsed = true)
+        assertTrue(RemoteSync.plan(listOf(used), emptySet(), "me", 100_000).starts.isEmpty())
+    }
+
+    @Test fun changedServerHashIsAdopted() {
+        val srv = s("a", "obs", SessionStatus.ACTIVE, 0, 900_000).copy(pwHash = "new", pwSalt = "salt2")
+        val p = RemoteSync.plan(listOf(srv), setOf("a"), "me", 100_000, mapOf("a" to "old"))
+        assertEquals(listOf(RemoteSync.Rehash("a", "new", "salt2")), p.rehash)
+        // same hash, unknown local session, or ended session: nothing to do
+        assertTrue(RemoteSync.plan(listOf(srv), setOf("a"), "me", 100_000, mapOf("a" to "new")).rehash.isEmpty())
+        assertTrue(RemoteSync.plan(listOf(srv), emptySet(), "me", 100_000, emptyMap()).rehash.isEmpty())
+        val ended = srv.copy(status = SessionStatus.ENDED)
+        assertTrue(RemoteSync.plan(listOf(ended), setOf("a"), "me", 100_000, mapOf("a" to "old")).rehash.isEmpty())
+    }
+
     @Test fun endedOnServerEndsLocal() {
         val p = RemoteSync.plan(listOf(s("a", "obs", SessionStatus.ENDED, 0, 900_000)), setOf("a", "b"), "me", 100_000)
         assertEquals(listOf("a"), p.endIds)

@@ -129,6 +129,10 @@
     <string name="lock_wrong">Wrong password. %d attempts left.</string>
     <string name="lock_cooldown">Too many wrong attempts. Try again in %1$d:%2$02d.</string>
     <string name="lock_no_password">This lock has no emergency password. Ask your Observer to unlock it.</string>
+    <string name="remote_pw_label">Emergency password: %1$s</string>
+    <string name="remote_pw_copy">Copy</string>
+    <string name="remote_pw_regen">New password</string>
+    <string name="remote_pw_missing">Password not on this phone. Use New password to make one.</string>
     <string name="lock_exit">Emergency exit</string>
     <string name="lock_exit_counting">Emergency exit: the lock ends in %1$d:%2$02d.</string>
 </resources>

@@ -20,6 +20,10 @@ class AppContainer(app: Application) {
     val appList = AppListRepository(db)
     val formats = FormatRepository(db)
     val schedules = com.imrat.focuslock.data.ScheduleRepository(db)
+    /** Observer-side emergency passwords (UNL-2): plaintext stays on this phone only, encrypted. */
+    val vault = com.imrat.focuslock.security.PasswordVault(
+        java.io.File(app.filesDir, "pwvault.bin"), com.imrat.focuslock.security.KeystoreBox.create(),
+    )
 }
 
 class FocusLockApp : Application() {

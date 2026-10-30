@@ -35,6 +35,11 @@ class SessionRepository(private val db: FirebaseFirestore) {
         col(userUid).document(sessionId).update(mapOf("status" to SessionStatus.ENDED.wire, "endedBy" to observerUid)).await()
     }
 
+    /** UNL-5: Observer replaces the password hash of a live session they created (rules: only pwHash/pwSalt change). */
+    suspend fun regenerate(userUid: String, sessionId: String, hash: String, salt: String) {
+        col(userUid).document(sessionId).update(mapOf("pwHash" to hash, "pwSalt" to salt)).await()
+    }
+
     /** Self-lock ended by the User (emergency exit, UNL-7). */
     suspend fun endBySelf(userUid: String, sessionId: String) = endByObserver(userUid, sessionId, userUid)
 

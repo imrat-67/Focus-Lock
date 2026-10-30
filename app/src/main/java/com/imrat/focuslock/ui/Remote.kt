@@ -1,5 +1,11 @@
 package com.imrat.focuslock.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import com.imrat.focuslock.security.PasswordCrypto
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,11 +61,18 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
         RemotePage.LOCK -> LockNowScreen(targetUid, apps, container.formats, { mode, pkgs, ms ->
             scope.launch {
                 val start = clock.now() + 60_000
+                val id = container.sessions.newId(targetUid)
+                val pw = withContext(Dispatchers.Default) { PasswordCrypto.fresh() }
                 val s = LockSession(
-                    "", myUid, mode, SessionKind.INSTANT, pkgs, start, start + ms, SessionStatus.PENDING,
-                    null, null, null, remoteInstant = true, passwordUsed = false,
+                    id, myUid, mode, SessionKind.INSTANT, pkgs, start, start + ms, SessionStatus.PENDING,
+                    pw.hash, pw.salt, null, remoteInstant = true, passwordUsed = false,
                 )
-                try { container.sessions.create(targetUid, s) } catch (e: Exception) { /* shown as missing in the list */ }
+                container.vault.put(id, pw.plain) // keep the plaintext before the hash goes out (UNL-2)
+                try {
+                    container.sessions.createWithId(targetUid, id, s)
+                } catch (e: Exception) {
+                    container.vault.remove(id) // not created: shown as missing in the list
+                }
                 page = RemotePage.HOME
             }
         }) { page = RemotePage.HOME }
@@ -79,7 +92,11 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                 Button(onClick = { page = RemotePage.SCHEDULES }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.sched_open)) }
                 Spacer(Modifier.height(24.dp))
                 Text(stringResource(R.string.remote_sessions), style = MaterialTheme.typography.titleMedium)
-                val running = live.filter { it.status != SessionStatus.ENDED }
+                var pwTick by remember { mutableIntStateOf(0) }
+                LaunchedEffect(live) { // finished sessions no longer need their password
+                    live.filter { it.status == SessionStatus.ENDED || it.passwordUsed }.forEach { container.vault.remove(it.id) }
+                }
+                val running = live.filter { it.status != SessionStatus.ENDED && !it.passwordUsed }
                 if (running.isEmpty()) Text(stringResource(R.string.remote_none))
                 running.forEach { s ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
@@ -91,6 +108,29 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                         OutlinedButton(onClick = {
                             scope.launch { runCatching { container.sessions.endByObserver(targetUid, s.id, myUid) } }
                         }) { Text(stringResource(R.string.remote_unlock)) }
+                    }
+                    if (s.createdBy == myUid && s.pwHash != null) {
+                        val pw = remember(s.id, pwTick, s.pwHash) { container.vault.get(s.id) }
+                        if (pw == null) {
+                            Text(stringResource(R.string.remote_pw_missing), style = MaterialTheme.typography.bodySmall)
+                        } else {
+                            Text(stringResource(R.string.remote_pw_label, pw), style = MaterialTheme.typography.titleMedium)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(onClick = {
+                                    val cm = ctx.getSystemService(ClipboardManager::class.java)
+                                    cm.setPrimaryClip(ClipData.newPlainText("password", pw))
+                                }) { Text(stringResource(R.string.remote_pw_copy)) }
+                                OutlinedButton(onClick = {
+                                    scope.launch {
+                                        val f = withContext(Dispatchers.Default) { PasswordCrypto.fresh() }
+                                        // server first: if it fails nothing changed; then keep the new plaintext (UNL-5)
+                                        val ok = runCatching { container.sessions.regenerate(targetUid, s.id, f.hash, f.salt) }.isSuccess
+                                        if (ok) { container.vault.put(s.id, f.plain); pwTick++ }
+                                    }
+                                }) { Text(stringResource(R.string.remote_pw_regen)) }
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
                 Text(stringResource(R.string.remote_unlock_note), style = MaterialTheme.typography.bodySmall)

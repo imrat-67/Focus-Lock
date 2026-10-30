@@ -109,8 +109,10 @@ class CoreService : Service() {
             if (uid != null) {
                 runCatching {
                     repo.observeLive(uid, engine.clock.now() - 60_000).collect { list ->
-                        val plan = com.imrat.focuslock.data.RemoteSync.plan(list, engine.localIds(), uid, engine.clock.now())
+                        val hashes = engine.local().associate { it.id to it.pwHash }
+                        val plan = com.imrat.focuslock.data.RemoteSync.plan(list, engine.localIds(), uid, engine.clock.now(), hashes)
                         plan.endIds.forEach { engine.endLocal(it) }
+                        plan.rehash.forEach { engine.updateHash(it.id, it.hash, it.salt) }
                         val wanted = plan.starts.map { it.session.id }.toSet()
                         pendingStarts.filterKeys { it !in wanted }.forEach { (id, job) -> job.cancel(); pendingStarts.remove(id) }
                         plan.starts.filter { it.session.id !in pendingStarts }.forEach { st ->
