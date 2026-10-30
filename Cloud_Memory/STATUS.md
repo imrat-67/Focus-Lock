@@ -20,6 +20,10 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 
 ## CHECKPOINT (live; overwrite before each step)
 Task: T09
-Plan/steps: [ ] a) read SRS LINK-1..7 + existing LinkRepository/rules
+Plan/steps: [x] a) read SRS LINK-1..7 + existing LinkRepository/rules (repo+rules already cover request/accept/removal/auto-7d)
+[ ] b) find how lookup (email/code -> uid) is resolved (UserRepository/Lookup) + pure LinkRules (LINK-7 guard, request-state logic) + unit tests
+[ ] c) LinkViewModel (observe own link, observer's users list, actions)
+[ ] d) Links UI: Add Device (My/Remote), incoming request, pending, removal; wire into Screens.kt
+[ ] e) emulator rules check if rules touched; assembleDebug + unit tests; install on phone
 Files touched: none yet
 Last commit: see git log
