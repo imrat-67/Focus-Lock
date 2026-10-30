@@ -8,7 +8,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T02 Skeleton builds: debug APK OK (Compose hello screen, google-services plugin applied); versions in D16-D18
 - [x] T03 Firebase live: project, Android app, SHA-1, Google sign-in enabled, Firestore (asia-south1), placeholder deny-all rules deployed, app/google-services.json has oauth clients (see D15)
 - [x] T04 Data layer + sign-in + rules: models/repos (User, Link, Session), Google sign-in, rules deployed, 25 emulator tests + 7 unit tests pass (D19-D20); sign-in VERIFIED on vivo Y29 (profile + friend code created in Firestore)
-- [ ] T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
+- [x] T05 Permissions checklist, CoreService (foreground, verified on vivo), encrypted SessionStore + tests; checklist UI title overlaps status bar (fix inset, T13)
 - [ ] T06 Lock engine: Accessibility detect, LockActivity, Full Lock, call/alarm/emergency-call exemptions (LOCK-1..4,9)
 - [ ] T07 Apps Lock + app-list upload + Formats (LOCK-3, FMT-1..3)
 - [ ] T08 Instant + Scheduled, alarms, timer, reboot persistence, time-tamper guard (LOCK-5,7,8, SCH-1..3)
@@ -19,7 +19,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [ ] T13 Polish, on-device test pass, release APK (R8, size < 15 MB), README, GitHub Release
 
 ## CHECKPOINT (live; overwrite before each step)
-Task: T05
-Plan/steps: [x] a) (written, uncompiled) Permissions: PermissionChecker + PermissionsScreen (UI-2) + stub LockAccessibilityService/AdminReceiver so they can be enabled · [x] b) (written) CoreService foreground skeleton (specialUse FGS, silent channel) started when signed in · [x] c) (written, untested) SessionStore: SessionRecord JSON codec + Keystore AES-GCM box + unit tests · [x] d1) CoreService restores SessionStore; assembleDebug + unit tests PASS (verified) · [ ] d2) install on vivo Y29, verify checklist + service on device (BLOCKED: no adb device)
-Files touched: app/src/main/** (service/, security/, ui/Permissions*), AndroidManifest.xml, res/xml/*, app/build.gradle.kts
-Last commit: see git log
+Task: none (T06 not started)
