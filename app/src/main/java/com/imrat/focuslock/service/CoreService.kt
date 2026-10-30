@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
+import kotlinx.coroutines.cancel
 import com.imrat.focuslock.security.KeystoreBox
 import com.imrat.focuslock.security.SessionStore
 import java.io.File
@@ -22,12 +23,21 @@ import com.imrat.focuslock.R
  * Skeleton in T05; Firestore listeners, alarms and session restore are added in T08/T10.
  */
 class CoreService : Service() {
+    private val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+    private var appSync: AppListSync? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        appSync?.stop()
+        scope.cancel()
+        super.onDestroy()
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         restoreSessions()
+        if (appSync == null) appSync = AppListSync(this, scope).also { it.start() } else appSync?.requestSync()
         return START_STICKY
     }
 
