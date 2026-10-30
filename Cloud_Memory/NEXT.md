@@ -1,7 +1,7 @@
 # NEXT (rewrite after every finished task)
 
 ## USER ACTION NEEDED
-- Choose test device for sign-in and the lock engine: real phone via Wireless debugging (send model + Android version) or emulator. Sign-in (Credential Manager) is untested until then.
+- Pair the phone for Wireless debugging (vivo Y29, see D22), then tell Claude "paired". Claude runs `adb pair/connect`, installs the APK, and tests sign-in.
 
 ## Do now: T05 Permissions checklist + CoreService skeleton + SessionStore (UI-2, LOCK-6,7)
 1. Read SRS UI-2, LOCK-6,7 and docs/ARCHITECTURE.md "Runtime pieces".
