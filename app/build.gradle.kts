@@ -52,4 +52,5 @@ dependencies {
     implementation(libs.googleid)
 
     testImplementation(libs.junit)
+    testImplementation(libs.org.json)
 }
