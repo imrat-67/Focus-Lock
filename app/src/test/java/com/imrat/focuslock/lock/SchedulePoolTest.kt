@@ -40,7 +40,7 @@ class SchedulePoolTest {
     }
 
     @Test fun prunedDropsOldKeepsRecentAndFuture() {
-        val old = now - 14L * 3600_000
+        val old = now - 26L * 3600_000
         val recent = now - 2L * 3600_000
         val fut = now + 3600_000
         val p = SchedulePool.pruned(mapOf(old.toString() to "x:y", recent.toString() to "x:y", fut.toString() to "x:y"), now)

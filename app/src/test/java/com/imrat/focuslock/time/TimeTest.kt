@@ -14,7 +14,7 @@ class TimeModelTest {
         assertEquals(1_000_000L + 500 + 3_000, TimeModel.serverNow(500, 10_000, 1_000_000, 13_000))
 
     @Test fun endElapsedFromServerEnd() = assertEquals(5_000L + 60_000, TimeModel.endElapsed(160_000, 100_000, 5_000))
-    @Test fun clampCapsAt12h() {
+    @Test fun clampCapsAtMax() {
         assertEquals(TimeModel.MAX_SESSION_MS, TimeModel.clampDuration(TimeModel.MAX_SESSION_MS * 3))
         assertEquals(0L, TimeModel.clampDuration(-5))
     }
@@ -61,10 +61,12 @@ class ScheduleExpanderTest {
         assertTrue(ScheduleExpander.next(spec, ms(2026, 11, 6, 0, 0), zone, 5).isEmpty())
     }
     @Test fun invalidSpecs() {
-        assertFalse(ScheduleSpec(weekdays, 0, 0).isValid()) // 24h > 12h cap
-        assertFalse(ScheduleSpec(weekdays, 8 * 60, 21 * 60).isValid()) // 13h
-        assertFalse(ScheduleSpec(emptySet(), 60, 120).isValid())
-        assertTrue(ScheduleSpec(weekdays, 8 * 60, 20 * 60).isValid()) // exactly 12h
-        assertTrue(ScheduleExpander.next(ScheduleSpec(weekdays, 0, 0), 0, zone).isEmpty())
+        // Cap is 24 h (D25): start == end means a full 24 h, which is the longest allowed lock.
+        assertTrue(ScheduleSpec(weekdays, 0, 0).isValid())
+        assertTrue(ScheduleSpec(weekdays, 8 * 60, 21 * 60).isValid()) // 13h
+        assertFalse(ScheduleSpec(emptySet(), 60, 120).isValid()) // no day, no date
+        assertFalse(ScheduleSpec(weekdays, -1, 60).isValid())
+        assertFalse(ScheduleSpec(weekdays, 60, 1440).isValid())
+        assertTrue(ScheduleExpander.next(ScheduleSpec(emptySet(), 60, 120), 0, zone).isEmpty())
     }
 }

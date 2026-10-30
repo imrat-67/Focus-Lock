@@ -9,7 +9,7 @@ import com.imrat.focuslock.time.ScheduleExpander
  */
 object SchedulePool {
     const val SIZE = 14
-    private const val KEEP_PAST_MS = 13L * 60 * 60 * 1000 // longest lock is 12 h; the Observer may still want to see it
+    private const val KEEP_PAST_MS = 25L * 60 * 60 * 1000 // longest lock is 24 h; the Observer may still want to see it
 
     fun encode(hash: String, salt: String) = "$hash:$salt"
 
