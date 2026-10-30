@@ -24,6 +24,8 @@ class AppContainer(app: Application) {
     val vault = com.imrat.focuslock.security.PasswordVault(
         java.io.File(app.filesDir, "pwvault.bin"), com.imrat.focuslock.security.KeystoreBox.create(),
     )
+    /** UNL-6: keeps Observer-made schedules supplied with passwords. Shares [vault] with the UI and the service. */
+    val poolTopUp = com.imrat.focuslock.lock.SchedulePoolTopUp(vault, schedules)
 }
 
 class FocusLockApp : Application() {

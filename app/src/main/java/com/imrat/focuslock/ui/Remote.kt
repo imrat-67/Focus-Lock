@@ -77,7 +77,7 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
             }
         }) { page = RemotePage.HOME }
         RemotePage.FORMATS -> FormatsScreen(targetUid, myUid, apps, container.formats) { page = RemotePage.HOME }
-        RemotePage.SCHEDULES -> SchedulesScreen(targetUid, apps, container.schedules, container.formats, myUid) { page = RemotePage.HOME }
+        RemotePage.SCHEDULES -> SchedulesScreen(targetUid, apps, container.schedules, container.formats, myUid, container.poolTopUp) { page = RemotePage.HOME }
         RemotePage.HOME -> {
             val live by remember(targetUid) { container.sessions.observeLive(targetUid, clock.now()) }
                 .collectAsStateWithLifecycle(emptyList())
@@ -131,6 +131,33 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                             }
                         }
                         Spacer(Modifier.height(8.dp))
+                    }
+                }
+                val scheds by remember(targetUid) { container.schedules.observe(targetUid) }.collectAsStateWithLifecycle(emptyList())
+                val mine = scheds.filter { it.createdBy == myUid && it.enabled && it.isUsable() }
+                LaunchedEffect(scheds) { // UNL-6: refill passwords whenever the Observer looks at this device
+                    scheds.forEach { s -> runCatching { container.poolTopUp.topUp(targetUid, myUid, s) } }
+                }
+                if (mine.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Text(stringResource(R.string.remote_sched_pw), style = MaterialTheme.typography.titleMedium)
+                    val dt = remember { java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT) }
+                    mine.forEach { s ->
+                        val next = com.imrat.focuslock.lock.SchedulePool.upcoming(s, clock.now()).firstOrNull() ?: return@forEach
+                        val pw = remember(s.pwPool, next) { container.vault.get(com.imrat.focuslock.lock.SchedulePool.vaultKey(s.id, next)) }
+                        val ready = pw != null && s.pwPool[next.toString()] != null
+                        Text(dt.format(java.util.Date(next)), Modifier.padding(top = 6.dp))
+                        if (!ready) {
+                            Text(stringResource(R.string.remote_sched_pw_missing), style = MaterialTheme.typography.bodySmall)
+                        } else {
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(stringResource(R.string.remote_pw_label, pw ?: ""), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                                OutlinedButton(onClick = {
+                                    val cm = ctx.getSystemService(ClipboardManager::class.java)
+                                    cm.setPrimaryClip(ClipData.newPlainText("password", pw))
+                                }) { Text(stringResource(R.string.remote_pw_copy)) }
+                            }
+                        }
                     }
                 }
                 Text(stringResource(R.string.remote_unlock_note), style = MaterialTheme.typography.bodySmall)

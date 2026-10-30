@@ -152,9 +152,7 @@ class CoreService : Service() {
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val links = com.imrat.focuslock.data.LinkRepository(db)
         val schedules = com.imrat.focuslock.data.ScheduleRepository(db)
-        val topUp = com.imrat.focuslock.lock.SchedulePoolTopUp(
-            com.imrat.focuslock.security.PasswordVault(File(filesDir, "pwvault.bin"), KeystoreBox.create()), schedules,
-        )
+        val topUp = (application as com.imrat.focuslock.FocusLockApp).container.poolTopUp
         while (true) {
             val me = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
             if (me != null) {

@@ -52,13 +52,13 @@ private fun hhmm(min: Int) = "%02d:%02d".format(min / 60, min % 60)
 
 /** Schedules list (SCH-1). Observer-created ones are read-only here (SCH-2). */
 @Composable
-fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository, formats: FormatRepository, myUid: String = uid, onBack: () -> Unit) {
+fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository, formats: FormatRepository, myUid: String = uid, topUp: com.imrat.focuslock.lock.SchedulePoolTopUp? = null, onBack: () -> Unit) {
     val list by remember(uid) { repo.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     var creating by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     if (creating) {
         ScheduleEditor(uid, myUid, apps, formats, onCancel = { creating = false }) { s ->
-            scope.launch { runCatching { repo.create(uid, s) }; creating = false }
+            scope.launch { runCatching { val id = repo.create(uid, s); topUp?.topUp(uid, myUid, s.copy(id = id)) }; creating = false }
         }
         return
     }
@@ -77,7 +77,7 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
                         Text(modeText + if (mine) "" else " · " + stringResource(R.string.sched_by_observer), style = MaterialTheme.typography.bodySmall)
                     }
                     if (mine) {
-                        Switch(s.enabled, { on -> scope.launch { runCatching { repo.update(uid, s.copy(enabled = on)) } } })
+                        Switch(s.enabled, { on -> scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } } })
                         TextButton(onClick = { scope.launch { runCatching { repo.delete(uid, s.id) } } }) { Text(stringResource(R.string.format_delete)) }
                     }
                 }
