@@ -1,17 +1,13 @@
 # NEXT (rewrite after every finished task)
 
-## Do now: T14f (steps a-e DONE; debug build + 88 unit tests green at b404058)
-Remaining: install on vivo (DONE, debug 0.1.0 at b7bd7b4+), device check of Full-lock Home/Recents re-cover, status dots, emulator-observer test, then finish T14 (mark DONE, README/SRS sweep, push).
-
-## (old) T14 REDESIGN
-User reported after final testing that UI is bad and flow/lock behaviour must change. Full spec: Cloud_Memory/REDESIGN.md (read it first).
-Claude asked the user clarifying questions (self-lock without observer, Home-block method, test setup, where settings live). Apply the user's answers, then start T14 (theme first, then flow, then lock fixes).
-T13 leftovers (release device pass, GitHub Release) are postponed until T14 is done.
+## Do now: finish T14
+User device-tests T14g on vivo (debug build installed). Apply any feedback, then mark T14 DONE, README sweep, push.
+Then T13 leftovers: release SHA-1 in Firebase, release device pass, GitHub Release.
 
 ## USER ACTION NEEDED
-vivo now has the T14 debug build: sign in, enable Accessibility + Device Admin + overlay, then tell Claude. Also BACK UP ~/focuslock-keys/release.jks and keystore.properties.
+Test on vivo: (1) send link request from 2nd account -> heads-up notification + red dot on profile icon (allow Notifications permission; new channel alerts_v2) (2) Apps lock from Instant lock does NOT cover Focus Lock, toast shows (3) status pill: Full lock / Selected apps locked (4) default 1 min (5) one-time schedule shows calendar.
+Back up ~/focuslock-keys/release.jks + keystore.properties.
 
 ## Notes
-- adb: ~/Android/Sdk/platform-tools/adb (vivo connected over wireless adb).
-- After any reinstall re-enable Settings > Accessibility > Focus Lock.
+- adb: ~/Android/Sdk/platform-tools/adb. After reinstall re-enable Accessibility.
 - Rules tests: cd rules-tests; export JAVA_HOME=~/tools/jdk-21.0.13+9; NODE_ENV=development npm i --include=dev; npm test.

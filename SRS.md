@@ -10,7 +10,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 ## 2. Glossary
 - **User**: owner of the phone being locked. **Observer**: person allowed to lock/unlock a User's phone.
 - **Account**: one Google account = one lockable phone + may observe others. Roles are per-relationship, not per-account.
-- **Session**: one active/pending lock (instant or one occurrence of a schedule). **Format**: named set of apps.
+- **Session**: one active/pending lock (instant or one occurrence of a schedule). **App list**: named set of apps.
 - **Full Lock**: whole phone blocked. **Apps Lock**: only selected apps blocked.
 
 ## 3. Functional requirements
@@ -21,7 +21,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - AUTH-3 Sign-out and account deletion are disabled while a lock is active on this phone.
 
 ### LINK (Observer relationship)
-- LINK-1 "Add Device" offers **My Device** or **Remote Device**. Both lead to the same lock/schedule/format screens.
+- LINK-1 "Add Device" offers **My Device** or **Remote Device**. Both lead to the same lock/schedule/app-list screens.
 - LINK-2 Remote Device: Observer enters the target's email or friend code. A request is created; the target sees it in-app (and as a local notification). Nothing can be locked until the target **accepts**.
 - LINK-3 Lookup never reveals whether an email has an account (always "request sent if the account exists").
 - LINK-4 A User has at most one Observer; an Observer can have many Users. A request to a User who already has an Observer is refused.
@@ -32,7 +32,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 ### LOCK
 - LOCK-1 Two modes: **Full Lock** and **Apps Lock**; two timings: **Instant** and **Scheduled**.
 - LOCK-2 Full Lock: whenever the screen is unlocked, the Focus Lock lock screen covers everything. Allowed through: the lock screen itself, an incoming/ongoing call UI (dialer is allowed only while a call is active, so outgoing dialing stays blocked), a ringing alarm. Home and Recents cannot be used to escape: the lock screen returns immediately. (The phone's own system lock-screen emergency dialer is unaffected.)
-- LOCK-3 Apps Lock: opening any blocked app shows the lock screen instead. Settings and all other apps work unless included. Home and Recents work normally in this mode (T14).
+- LOCK-3 Apps Lock: opening any blocked app shows the lock screen instead. Settings and all other apps work unless included. Home and Recents work normally in this mode (T14). Focus Lock itself is never covered in this mode; starting one shows an "App lock is on" toast (self) or notification (remote) instead (T14g).
 - LOCK-4 Lock screen shows: live countdown, who locked, mode, password field. Nothing else: no Emergency-unlock button and no call buttons (removed in T14).
 - LOCK-5 Maximum single session length: 24 hours (changed from 12 in T14).
 - LOCK-6 Enforcement is local and works fully offline once a session is known to the phone.
@@ -41,14 +41,14 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - LOCK-9 Normal system notifications are never blocked or hidden by the lock.
 
 ### SCH (Scheduling)
-- SCH-1 Schedules can be one-time or repeating (days of week + start/end time); several allowed.
+- SCH-1 Schedules can be one-time or repeating (days of week + start/end time); several allowed. A one-time schedule's date is chosen from a calendar (today or later).
 - SCH-2 Whoever created a schedule owns it: Observer-created schedules can be edited/deleted only by the Observer; User-created ones only by the User.
 - SCH-3 Each occurrence becomes a session at its start time, using exact alarms locally (no server needed at start time).
 - SCH-4 Observer can cancel an upcoming or running instant/scheduled session at any time (see UNL-1).
 
-### FMT (Formats)
-- FMT-1 A Format = name + list of apps. No hard count limit (Firestore doc-size bound only).
-- FMT-2 Both User and Observer can create/edit/delete Formats for that User's phone. Using a Format for a lock is one tap.
+### FMT (App lists)
+- FMT-1 An App list = name + list of apps. No hard count limit (Firestore doc-size bound only).
+- FMT-2 Both User and Observer can create/edit/delete App lists for that User's phone. Using an App list for a lock is one tap.
 - FMT-3 The User's phone uploads its launchable app list (name + package only) so the Observer can choose apps. Readable only by that User and their Observer. Refreshed when the app opens and when apps are installed/removed.
 
 ### UNL (Unlocking)
@@ -63,9 +63,10 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 ### NOT (Notifications)
 - NOT-1 Scheduled lock: one notification 10 minutes before start.
 - NOT-2 Remote Instant lock: a 1-minute warning notification; lock starts after 60 s and the User cannot cancel it (they should contact the Observer). Self-started instant locks start immediately after a confirm dialog.
-- NOT-3 Link request / removal request alerts (in-app + local notification).
+- NOT-3 Link request / removal request alerts: heads-up local notification plus a red dot on the Home profile icon while a request is pending (T14g).
 - NOT-4 Unavoidable: Android requires one low-priority persistent notification for the always-on service. Keep it minimal and silent.
-- NOT-5 No other Focus Lock notifications.
+- NOT-5 No other Focus Lock notifications (the only extra one is the "App lock is on" notice when a remote Apps lock starts).
+- UI-S Device status shows the lock type: Unlocked / Full lock / Selected apps locked. Instant lock duration defaults to 1 minute.
 
 ### SEC (Security)
 - SEC-1 Device Admin is enabled so Focus Lock cannot be uninstalled during a lock.
@@ -76,7 +77,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - SEC-6 Threat model: resists ordinary bypass (force-stop, uninstall, clock change, reboot, app switching, going offline). Cannot resist Safe Mode, ADB/PC tools, root, or factory reset — no normal app can. A determined offline brute-force of a 6-digit hash is possible for a technical user; PBKDF2 with high iterations makes it slow, not impossible.
 
 ### UI
-- UI-1 Screens: Sign-in · Home (devices + requests) · Add Device · Device detail (lock now, schedules, formats) · Lock screen · Permissions checklist.
+- UI-1 Screens: Sign-in · Home (devices + requests) · Add Device · Device detail (lock now, schedules, app lists) · Lock screen · Permissions checklist.
 - UI-2 First-run permissions checklist: Accessibility, Device Admin, Notifications, Exact alarms, Battery-optimization exemption, Usage access, Phone state/Call, Display-over-apps if needed. Each shows granted/missing with a button.
 - UI-3 Simple, clean, Material 3; dark mode follows system.
 
