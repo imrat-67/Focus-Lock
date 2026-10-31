@@ -43,6 +43,7 @@ import com.imrat.focuslock.ui.FocusLockTheme
 import com.imrat.focuslock.ui.PrimaryButton
 import com.imrat.focuslock.ui.Subtle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -66,14 +67,17 @@ class LockActivity : ComponentActivity() {
                 var remaining by remember { mutableLongStateOf(0L) }
                 var nowEl by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
                 LaunchedEffect(Unit) {
-                    while (true) {
-                        val now = SystemClock.elapsedRealtime()
-                        nowEl = now
-                        val s = LockPolicy.displayed(cache.get(), now)
-                        if (s == null) { finishAndRemoveTask(); break }
-                        session = s
-                        remaining = s.endElapsedMs - now
-                        delay(500)
+                    // Only while visible: a stopped lock screen (Apps lock, user on Home) must not keep ticking.
+                    lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                        while (true) {
+                            val now = SystemClock.elapsedRealtime()
+                            nowEl = now
+                            val s = LockPolicy.displayed(cache.get(), now)
+                            if (s == null) { finishAndRemoveTask(); break }
+                            session = s
+                            remaining = s.endElapsedMs - now
+                            delay(500)
+                        }
                     }
                 }
                 session?.let {

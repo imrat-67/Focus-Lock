@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.runtime.produceState
 import com.imrat.focuslock.data.AppEntry
 import com.imrat.focuslock.lock.InstalledApps
@@ -74,11 +75,13 @@ class MainActivity : ComponentActivity() {
                             var remoteName by rememberSaveable { mutableStateOf("") }
                             val store = remember(s.profile.uid) { DeviceStore(this@MainActivity, s.profile.uid) }
                             val apps by produceState(emptyList<AppEntry>()) { value = withContext(Dispatchers.IO) { InstalledApps.load(this@MainActivity) } }
-                            val lockStateNow by produceState(LockState.UNLOCKED) { // AUTH-3: re-check every second
-                                while (true) {
-                                    val t = SystemClock.elapsedRealtime()
-                                    value = LockState.of(SessionCache(this@MainActivity).get().filter { it.endElapsedMs > t }.map { it.mode })
-                                    kotlinx.coroutines.delay(1_000)
+                            val lockStateNow by produceState(LockState.UNLOCKED) { // AUTH-3: re-check every second, only while the app is on screen
+                                lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                                    while (true) {
+                                        val t = SystemClock.elapsedRealtime()
+                                        value = LockState.of(SessionCache(this@MainActivity).get().filter { it.endElapsedMs > t }.map { it.mode })
+                                        kotlinx.coroutines.delay(1_000)
+                                    }
                                 }
                             }
                             val lockActiveNow = lockStateNow != LockState.UNLOCKED
@@ -91,7 +94,8 @@ class MainActivity : ComponentActivity() {
                             } else when (route) {
                                 "add" -> {
                                     BackHandler { route = "home" }
-                                    AddDeviceScreen(store.myDevice.value, { store.setMyDevice(true); route = "home" }, { route = "addRemote" }) { route = "home" }
+                                    val myAdded by store.myDevice.collectAsStateWithLifecycle()
+                                    AddDeviceScreen(myAdded, { store.setMyDevice(true); route = "home" }, { route = "addRemote" }) { route = "home" }
                                 }
                                 "addRemote" -> {
                                     BackHandler { route = "add" }

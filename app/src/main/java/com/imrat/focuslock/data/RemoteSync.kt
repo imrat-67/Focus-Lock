@@ -19,10 +19,11 @@ object RemoteSync {
             .filter { it.createdBy != me && it.status != SessionStatus.ENDED && !it.passwordUsed && it.endAtMs > serverNowMs && it.id !in localIds }
             .map { Start(it, (it.startAtMs - serverNowMs).coerceAtLeast(0)) }
         val ends = server.filter { it.status == SessionStatus.ENDED && it.id in localIds }.map { it.id }
-        val rehash = server.filter {
-            it.createdBy != me && it.status != SessionStatus.ENDED && it.pwHash != null && it.pwSalt != null &&
-                it.id in localHashes && localHashes[it.id] != it.pwHash
-        }.map { Rehash(it.id, it.pwHash!!, it.pwSalt!!) }
+        val rehash = server.mapNotNull { s ->
+            val hash = s.pwHash ?: return@mapNotNull null
+            val salt = s.pwSalt ?: return@mapNotNull null
+            if (s.createdBy != me && s.status != SessionStatus.ENDED && s.id in localHashes && localHashes[s.id] != hash) Rehash(s.id, hash, salt) else null
+        }
         return Plan(starts, ends, rehash)
     }
 }

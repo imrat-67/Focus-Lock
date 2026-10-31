@@ -190,7 +190,7 @@ class SessionEngine(ctx: Context) {
             app, s.id.hashCode(), Intent(app, SessionEndReceiver::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        if (am.canScheduleExactAlarms()) {
+        if (canExact(am)) {
             am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, s.endElapsedMs, pi)
         } else {
             am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, s.endElapsedMs, pi)

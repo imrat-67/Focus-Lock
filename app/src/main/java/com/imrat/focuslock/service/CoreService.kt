@@ -7,6 +7,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import kotlinx.coroutines.cancel
@@ -47,7 +48,8 @@ class CoreService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        if (Build.VERSION.SDK_INT >= 34) startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        else startForeground(NOTIFICATION_ID, buildNotification()) // API 26-33: type comes from the manifest
         restoreSessions()
         if (appSync == null) appSync = AppListSync(this, scope).also { it.start() } else appSync?.requestSync()
         return START_STICKY

@@ -174,7 +174,7 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 DayOfWeek.entries.forEach { d ->
                     FilterChip(d.value in days, { days = if (d.value in days) days - d.value else days + d.value },
-                        { Text(d.getDisplayName(TextStyle.NARROW, Locale.getDefault())) })
+                        { Text(d.getDisplayName(TextStyle.NARROW, androidx.compose.ui.platform.LocalConfiguration.current.locales[0])) })
                 }
             }
         } else {

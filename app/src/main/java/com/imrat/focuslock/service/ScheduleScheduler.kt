@@ -17,6 +17,7 @@ import com.imrat.focuslock.data.ScheduleCodec
 import com.imrat.focuslock.lock.Planned
 import com.imrat.focuslock.lock.SchedulePlan
 import com.imrat.focuslock.lock.SessionEngine
+import com.imrat.focuslock.lock.canExact
 import com.imrat.focuslock.time.TimeModel
 import java.io.File
 
@@ -69,7 +70,7 @@ class ScheduleScheduler(ctx: Context) {
     private fun cancel(am: AlarmManager, id: String) { am.cancel(pi(id, KIND_NOTICE)); am.cancel(pi(id, KIND_START)) }
 
     private fun set(am: AlarmManager, id: String, kind: String, atElapsed: Long) {
-        if (am.canScheduleExactAlarms()) am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, atElapsed, pi(id, kind))
+        if (canExact(am)) am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, atElapsed, pi(id, kind))
         else am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, atElapsed, pi(id, kind))
     }
 

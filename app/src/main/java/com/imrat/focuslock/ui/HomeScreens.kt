@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +68,10 @@ fun HomeScreen(
     var sheet by remember { mutableStateOf(false) }
     var naming by remember { mutableStateOf<String?>(null) }
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) { while (true) { delay(15_000); now = System.currentTimeMillis() } }
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(lifecycle) {
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) { while (true) { now = System.currentTimeMillis(); delay(15_000) } }
+    }
 
     AppScreen(
         stringResource(R.string.app_name), scroll = false,
@@ -254,17 +258,22 @@ fun ThisDeviceScreen(lockState: LockState, onInstant: () -> Unit, onSchedule: ()
 @Composable
 private fun RunningAppLocks() {
     val ctx = LocalContext.current
+    val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
     val running by androidx.compose.runtime.produceState(emptyList<com.imrat.focuslock.security.LocalSession>()) {
         val cache = com.imrat.focuslock.lock.SessionCache(ctx)
-        while (true) {
-            val t = android.os.SystemClock.elapsedRealtime()
-            value = cache.get().filter { it.endElapsedMs > t && it.mode == com.imrat.focuslock.data.LockMode.APPS }
-            delay(1_000)
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            while (true) {
+                val t = android.os.SystemClock.elapsedRealtime()
+                value = cache.get().filter { it.endElapsedMs > t && it.mode == com.imrat.focuslock.data.LockMode.APPS }
+                delay(1_000)
+            }
         }
     }
-    // Ticks every second so the countdown recomposes even when the session list itself is unchanged.
+    // Ticks every second (only while on screen) so the countdown recomposes even when the session list itself is unchanged.
     val nowEl by androidx.compose.runtime.produceState(android.os.SystemClock.elapsedRealtime()) {
-        while (true) { value = android.os.SystemClock.elapsedRealtime(); delay(1_000) }
+        lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            while (true) { value = android.os.SystemClock.elapsedRealtime(); delay(1_000) }
+        }
     }
     if (running.isEmpty()) return
     val clock = remember { java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT) }
