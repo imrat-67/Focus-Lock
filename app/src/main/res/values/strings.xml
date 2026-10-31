@@ -19,6 +19,8 @@
     <string name="perms_intro">Allow these so locks keep working.</string>
     <string name="perms_done">Continue</string>
     <string name="perms_open">Set up permissions (%1$d missing)</string>
+    <string name="perm_a11y_restricted">Still off? Open App info, tap ⋮ (top right), choose Allow restricted settings, then turn it on again.</string>
+    <string name="perm_app_info">Open App info</string>
     <string name="perm_granted">Granted</string>
     <string name="perm_missing">Missing</string>
     <string name="perm_grant">Grant</string>

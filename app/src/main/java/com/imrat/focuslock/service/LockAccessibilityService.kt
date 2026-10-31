@@ -17,6 +17,7 @@ import com.imrat.focuslock.lock.SessionCache
 class LockAccessibilityService : AccessibilityService() {
     private lateinit var cache: SessionCache
     private var lastScan = 0L
+    private var lastContentCheck = 0L
 
     override fun onServiceConnected() {
         cache = SessionCache(this)
@@ -37,9 +38,13 @@ class LockAccessibilityService : AccessibilityService() {
                 return
             }
         }
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
-            LockEnforcer.shouldCover(this, pkg, event.className?.toString(), sessions, now)
-        ) { LockEnforcer.cover(this); return }
+        // Some phones open Recents inside the launcher without a window-state event: during a FULL lock also react to content changes (rate limited).
+        val stateChange = event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        val fullContent = !stateChange && active.any { it.mode == LockMode.FULL } && now - lastContentCheck > CONTENT_GAP_MS
+        if (fullContent) lastContentCheck = now
+        if ((stateChange || fullContent) && LockEnforcer.shouldCover(this, pkg, event.className?.toString(), sessions, now)) {
+            LockEnforcer.cover(this); return
+        }
         if (LockPolicy.isSettingsLike(pkg) && now - lastScan > SCAN_GAP_MS) {
             lastScan = now
             if (LockPolicy.isProtectedScreen(pkg, screenTexts(), getString(R.string.app_name))) {
@@ -76,5 +81,5 @@ class LockAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() = Unit
 
-    private companion object { const val SCAN_GAP_MS = 300L; const val MAX_NODES = 400 }
+    private companion object { const val SCAN_GAP_MS = 300L; const val CONTENT_GAP_MS = 120L; const val MAX_NODES = 400 }
 }

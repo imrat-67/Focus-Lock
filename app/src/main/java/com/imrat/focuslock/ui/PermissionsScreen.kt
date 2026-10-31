@@ -81,6 +81,7 @@ fun PermissionsScreen(onDone: () -> Unit) {
         }
     }
 
+    var a11yTried by remember { mutableStateOf(false) }
     var pending by remember { mutableStateOf<Perm?>(null) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         tick++
@@ -124,8 +125,18 @@ fun PermissionsScreen(onDone: () -> Unit) {
                             Spacer(Modifier.height(12.dp))
                             SecondaryButton(stringResource(R.string.perm_grant), {
                                 val rt = Perms.runtimePermission(p)
+                                if (p == Perm.ACCESSIBILITY) a11yTried = true
                                 if (rt != null) { pending = p; launcher.launch(rt) } else openSettings(p)
                             })
+                            // Android blocks sideloaded apps from this switch until "Allow restricted settings" is set in App info.
+                            if (p == Perm.ACCESSIBILITY && a11yTried) {
+                                Spacer(Modifier.height(10.dp))
+                                Subtle(stringResource(R.string.perm_a11y_restricted))
+                                Spacer(Modifier.height(8.dp))
+                                SecondaryButton(stringResource(R.string.perm_app_info), {
+                                    ctx.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:" + ctx.packageName)))
+                                })
+                            }
                         }
                     }
                 }
