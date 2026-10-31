@@ -92,15 +92,35 @@ fun AppIcon(pkg: String, name: String, size: Int = 40) {
 }
 
 /** Searchable multi-select list of apps with icons (FMT-1). */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun AppPicker(apps: List<AppEntry>, selected: Set<String>, onToggle: (String) -> Unit, modifier: Modifier = Modifier) {
     var query by remember { mutableStateOf("") }
     val shown = remember(apps, query) { apps.filter { it.name.contains(query, true) || it.pkg.contains(query, true) } }
     Column(modifier) {
-        OutlinedTextField(
-            value = query, onValueChange = { query = it }, singleLine = true, shape = MaterialTheme.shapes.medium,
-            placeholder = { Text(stringResource(R.string.format_search)) }, textStyle = MaterialTheme.typography.bodyMedium,
+        Spacer(Modifier.height(8.dp))
+        val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+        androidx.compose.foundation.text.BasicTextField(
+            value = query, onValueChange = { query = it }, singleLine = true,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+            interactionSource = interaction,
             modifier = Modifier.fillMaxWidth().height(48.dp),
+            decorationBox = { inner ->
+                androidx.compose.material3.OutlinedTextFieldDefaults.DecorationBox(
+                    value = query, innerTextField = inner, enabled = true, singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.VisualTransformation.None,
+                    interactionSource = interaction,
+                    container = {
+                        androidx.compose.material3.OutlinedTextFieldDefaults.ContainerBox(
+                            enabled = true, isError = false, interactionSource = interaction,
+                            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(), shape = MaterialTheme.shapes.medium,
+                        )
+                    },
+                    placeholder = { Text(stringResource(R.string.format_search), style = MaterialTheme.typography.bodyMedium) },
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                )
+            },
         )
         Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
         LazyColumn(Modifier.weight(1f)) {
