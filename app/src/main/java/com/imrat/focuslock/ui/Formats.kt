@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -230,6 +231,25 @@ fun AppSelectField(
                     if (saved.isNotEmpty()) SavedListPicker(saved, onChange)
                     AppPicker(apps, selected, { p -> onChange(if (p in selected) selected - p else selected + p) }, Modifier.weight(1f))
                     PrimaryButton(stringResource(R.string.select_done), { open = false }, Modifier.padding(top = 12.dp))
+                }
+            }
+        }
+    }
+}
+
+/** The apps chosen so far, shown under [AppSelectField] so the person sees what will be locked. Tap the cross to drop one. */
+@Composable
+fun SelectedApps(apps: List<AppEntry>, selected: Set<String>, onChange: (Set<String>) -> Unit, modifier: Modifier = Modifier) {
+    if (selected.isEmpty()) return
+    val chosen = remember(apps, selected) { apps.filter { it.pkg in selected } }
+    Column(modifier.padding(top = 4.dp)) {
+        chosen.forEach { a ->
+            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                AppIcon(a.pkg, a.name, 32)
+                Spacer(Modifier.width(12.dp))
+                Text(a.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                androidx.compose.material3.IconButton(onClick = { onChange(selected - a.pkg) }, Modifier.size(36.dp)) {
+                    androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.Close, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

@@ -83,7 +83,6 @@
     <string name="sched_from">From</string>
     <string name="sched_to">To</string>
     <string name="sched_date">Date: %s</string>
-    <string name="sched_rules">Max 24 hours. An earlier end time means the next day.</string>
     <string name="perm_overlay">Display over other apps</string>
     <string name="perm_overlay_why">Opens the lock screen instantly.</string>
     <string name="links_open">Devices &amp; Observer</string>

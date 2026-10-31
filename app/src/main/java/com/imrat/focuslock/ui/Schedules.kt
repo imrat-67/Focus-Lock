@@ -185,10 +185,10 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
             TimeField(stringResource(R.string.sched_from), start) { start = it }
             TimeField(stringResource(R.string.sched_to), end) { end = it }
         }
-        Text(stringResource(R.string.sched_rules), style = MaterialTheme.typography.bodySmall)
         if (mode == LockMode.APPS) {
             Spacer(Modifier.height(8.dp))
             AppSelectField(apps, selected, saved, { selected = it })
+            SelectedApps(apps, selected, { selected = it })
         }
         Spacer(Modifier.height(12.dp))
         }

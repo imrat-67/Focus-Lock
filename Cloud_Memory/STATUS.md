@@ -19,6 +19,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [x] T12 Hardening: SEC-1 Device Admin; SEC-2 LockPolicy.isProtectedScreen + accessibility scan (windowContent) + tests; AUTH-3 sign-out disabled during lock (VM guard + UI). 89 unit tests pass, installed on vivo. SEC-2 device-verified on vivo (App info covered by LockActivity during lock)
 - [~] T13 Done: perms inset, signed release APK 3.2 MB (R8, keystore ~/focuslock-keys, keystore.properties ignored), README. Left: add release SHA-1 to Firebase, on-device pass, GitHub Release
 
+- [x] T19 Schedule caption removed; App lists caption on Remote device; selected apps listed (icon, name, remove) under Select apps in Instant lock + Schedule editor. Tests pass, Instant lock screenshot-verified
 - [x] T18 Feedback 3: App lists caption; sign-out blocked while Observer linked (LinkRules.canSignOut + live recheck); ic_stat_logo notification icon; accepted/declined request alerts to Observer; app selection in dialog (AppSelectField) so timer wheels never shift; schedule row time|switch|Delete. 97 tests pass, installed; Instant lock screens checked by screenshot, Schedules + notifications NOT eyeballed
 - [x] T17 Feedback 2: ticking countdown (1s produceState), search field/dropdown both 48dp + "Choose from saved app list", no empty-list flash (Formats, Schedules), schedule row Delete+Switch aligned, FULL lock reacts to launcher content changes (Recents delay), a11y hint + App info button (OS blocks sideloaded a11y: appops ACCESS_RESTRICTED_SETTINGS rejected). 94 tests pass, installed. UI NOT eyeballed (phone was locked)
 - [x] T16 User feedback batch: Recents cover (FULL at once, APPS when a locked app shows in Recents; LockPolicy.isRecents/recentsExposesLocked + tests), a11y timeout 0, running-lock countdown, saved-list dropdown, red dot for missing perms, text trimmed, vivo wording removed, Instant-lock bottom layout. 94 unit tests pass, installed on vivo. a11y double-toggle: no crash in logs, detection correct -> phone/OS side (restricted settings, reinstall unbinds)
@@ -26,4 +27,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-none (T18 finished, waiting for user device test)
+none (T19 finished)

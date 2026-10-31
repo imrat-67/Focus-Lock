@@ -99,7 +99,10 @@ fun RemoteDeviceScreen(targetUid: String, myUid: String, name: String, container
                     Text(stringResource(R.string.h_schedule), style = MaterialTheme.typography.titleMedium)
                     Subtle(stringResource(R.string.h_schedule_sub))
                 }
-                FLCard(onClick = { page = RemotePage.FORMATS }) { Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium) }
+                FLCard(onClick = { page = RemotePage.FORMATS }) {
+                    Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium)
+                    Subtle(stringResource(R.string.h_formats_sub))
+                }
 
                 SectionLabel(stringResource(R.string.remote_sessions))
                 if (running.isEmpty()) Subtle(stringResource(R.string.remote_none))

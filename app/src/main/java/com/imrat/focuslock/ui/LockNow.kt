@@ -2,6 +2,7 @@ package com.imrat.focuslock.ui
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
@@ -74,8 +75,10 @@ fun LockNowScreen(
         if (mode == LockMode.APPS) {
             Spacer(Modifier.height(8.dp))
             AppSelectField(apps, selected, saved, { selected = it })
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) { SelectedApps(apps, selected, { selected = it }) }
+        } else {
+            Spacer(Modifier.weight(1f))
         }
-        Spacer(Modifier.weight(1f))
         Subtle(stringResource(R.string.locknow_warning), Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp), align = TextAlign.Center)
         PrimaryButton(
             stringResource(R.string.locknow_start), { onStart(mode, selected.toList(), total * 60_000L) },
