@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -199,5 +200,38 @@ private fun FormatEditor(
             { scope.launch { failed = !runCatching { onSave(name, selected) }.isSuccess } },
             Modifier.padding(top = 8.dp, bottom = 16.dp), enabled = FormatCodec.isValid(name, selected),
         )
+    }
+}
+
+/** One-line button that opens the app selection (saved-list dropdown, search, list) in a dialog, so the screen layout never shifts. */
+@Composable
+fun AppSelectField(
+    apps: List<AppEntry>, selected: Set<String>, saved: List<Format>, onChange: (Set<String>) -> Unit, modifier: Modifier = Modifier,
+) {
+    var open by remember { mutableStateOf(false) }
+    androidx.compose.material3.OutlinedButton(
+        onClick = { open = true }, modifier = modifier.fillMaxWidth().height(48.dp), shape = MaterialTheme.shapes.medium,
+    ) {
+        Text(
+            if (selected.isEmpty()) stringResource(R.string.select_apps) else stringResource(R.string.select_apps_n, selected.size),
+            Modifier.weight(1f),
+        )
+        androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Filled.ArrowDropDown, null)
+    }
+    if (open) {
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { open = false },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Column(Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+                    Text(stringResource(R.string.select_apps), style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.height(12.dp))
+                    if (saved.isNotEmpty()) SavedListPicker(saved, onChange)
+                    AppPicker(apps, selected, { p -> onChange(if (p in selected) selected - p else selected + p) }, Modifier.weight(1f))
+                    PrimaryButton(stringResource(R.string.select_done), { open = false }, Modifier.padding(top = 12.dp))
+                }
+            }
+        }
     }
 }

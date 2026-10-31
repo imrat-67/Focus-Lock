@@ -243,7 +243,10 @@ fun ThisDeviceScreen(lockState: LockState, onInstant: () -> Unit, onSchedule: ()
             Text(stringResource(R.string.h_schedule), style = MaterialTheme.typography.titleMedium)
             Subtle(stringResource(R.string.h_schedule_sub))
         }
-        FLCard(onClick = onFormats) { Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium) }
+        FLCard(onClick = onFormats) {
+            Text(stringResource(R.string.formats_open), style = MaterialTheme.typography.titleMedium)
+            Subtle(stringResource(R.string.h_formats_sub))
+        }
     }
 }
 

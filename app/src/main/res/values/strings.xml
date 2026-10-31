@@ -164,6 +164,10 @@
     <string name="h_profile">Profile</string>
     <string name="h_copy_code">Copy code</string>
     <string name="h_instant">Instant lock</string>
+    <string name="h_formats_sub">Save app sets to lock in one tap</string>
+    <string name="select_apps">Select apps</string>
+    <string name="select_apps_n">%d apps selected</string>
+    <string name="select_done">Done</string>
     <string name="h_instant_sub">Lock now for a set time</string>
     <string name="h_schedule">Schedule lock</string>
     <string name="h_schedule_sub">Lock automatically on chosen days</string>

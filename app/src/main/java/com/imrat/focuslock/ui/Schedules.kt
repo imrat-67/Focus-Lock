@@ -81,12 +81,12 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
                             Subtle(modeText + if (mine) "" else " · " + stringResource(R.string.sched_by_observer))
                         }
                         if (mine) {
+                            Switch(s.enabled, modifier = Modifier.padding(end = 20.dp), onCheckedChange = { on ->
+                                scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } }
+                            })
                             TextButton(onClick = { scope.launch { runCatching { repo.delete(uid, s.id) } } }) {
                                 Text(stringResource(R.string.format_delete), color = MaterialTheme.colorScheme.error)
                             }
-                            Switch(s.enabled, modifier = Modifier.padding(start = 4.dp, end = 8.dp), onCheckedChange = { on ->
-                                scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } }
-                            })
                         }
                     }
                 }
@@ -188,9 +188,7 @@ private fun ScheduleEditor(uid: String, myUid: String, apps: List<AppEntry>, for
         Text(stringResource(R.string.sched_rules), style = MaterialTheme.typography.bodySmall)
         if (mode == LockMode.APPS) {
             Spacer(Modifier.height(8.dp))
-            if (saved.isNotEmpty()) SavedListPicker(saved, { selected = it })
-            Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelLarge)
-            AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.height(280.dp))
+            AppSelectField(apps, selected, saved, { selected = it })
         }
         Spacer(Modifier.height(12.dp))
         }

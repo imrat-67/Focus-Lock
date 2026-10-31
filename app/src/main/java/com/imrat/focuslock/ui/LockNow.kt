@@ -53,7 +53,7 @@ fun LockNowScreen(
     val saved by remember(uid) { formats.observe(uid) }.collectAsStateWithLifecycle(emptyList())
     val total = hours * 60 + minutes
     val validTime = total in MIN_LOCK_MINUTES..MAX_LOCK_MINUTES
-    val wheelRows = if (mode == LockMode.APPS) 3 else 5 // shorter wheel leaves room for the app list
+    val wheelRows = 5 // fixed: switching Full/Apps never moves the timer
     AppScreen(stringResource(R.string.h_instant), onBack, scroll = false) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(mode == LockMode.FULL, { mode = LockMode.FULL }, { Text(stringResource(R.string.mode_full)) })
@@ -72,11 +72,10 @@ fun LockNowScreen(
         }
         if (!validTime) Text(stringResource(R.string.lock_time_invalid), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         if (mode == LockMode.APPS) {
-            if (saved.isNotEmpty()) SavedListPicker(saved, { selected = it })
-            AppPicker(apps, selected, { p -> selected = if (p in selected) selected - p else selected + p }, Modifier.weight(1f))
-        } else {
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(8.dp))
+            AppSelectField(apps, selected, saved, { selected = it })
         }
+        Spacer(Modifier.weight(1f))
         Subtle(stringResource(R.string.locknow_warning), Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp), align = TextAlign.Center)
         PrimaryButton(
             stringResource(R.string.locknow_start), { onStart(mode, selected.toList(), total * 60_000L) },
