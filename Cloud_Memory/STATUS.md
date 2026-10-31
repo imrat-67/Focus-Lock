@@ -28,4 +28,4 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-none (T20 audit finished; waiting for user to confirm before building the shareable release APK)
+T21 RELEASE (user confirmed T20): [ ] wipe Firestore (all collections) + list Auth users [ ] clean build tests + assembleRelease [ ] verify apk (apksigner, debuggable=false, no debug receiver, perms) [ ] phone: remove debug app (dpm remove-active-admin), install release, launch, logcat crash check [ ] copy to release/FocusLock-0.1.0.apk + sha256 [ ] docs/STATUS/NEXT, commit, push
