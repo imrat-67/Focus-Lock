@@ -27,4 +27,7 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-none (T19 finished)
+T20 FINAL AUDIT (user wants pre-release recheck; do NOT build/share release APK until user confirms audit)
+Audit found (fix list): [ ] F1 CoreService startForeground 3-arg needs API29 (crash API26-28) [ ] F2 canScheduleExactAlarms needs API31 (ScheduleScheduler:72, SessionEngine:193; crash API26-30) [ ] F3 lint errors: MainActivity StateFlow.value in composition, Schedules Locale.getDefault [ ] F4 RemoteSync !! [ ] F5 battery: ForegroundWatcher 250ms->500ms + skip w/o usage access; lifecycle-aware tickers (LockActivity, MainActivity, HomeScreens) [ ] F6 proguard strip Log.d/i/v [ ] F7 docs: ARCHITECTURE (Keystore not Jetpack Security, AudioManager CallGuard, receiver names, listeners), SRS (AUTH-3/4 sign-out w/ observer, no account deletion, LINK-3 caveat, FMT-1 caps, NFR-3 polling, 6 open items), README (restricted settings, release-vs-debug deviceId)
+Then: [ ] build+tests+lint [ ] install debug on vivo + screenshot UI review [ ] report to user, ask confirm [ ] (after confirm) release SHA-1 to Firebase via CLI, release APK
+Known caveat to tell user: ANDROID_ID is per signing key -> accounts first used with debug build hit "other device" on release build (users doc deviceId immutable); fresh accounts fine.
