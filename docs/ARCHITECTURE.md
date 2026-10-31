@@ -1,16 +1,17 @@
 # Architecture (v1)
 
 ## Stack
-Kotlin · Jetpack Compose (Material 3) · minSdk 26 · targetSdk = latest installed stable · Gradle Kotlin DSL + version catalog · manual DI (no Hilt, keep small) · Coroutines/Flow · Firebase Auth + Firestore (no FCM sender, no Functions) · Jetpack Security / Keystore for local secrets · R8 on release.
+Kotlin · Jetpack Compose (Material 3) · minSdk 26 · targetSdk = latest installed stable · Gradle Kotlin DSL + version catalog · manual DI (no Hilt, keep small) · Coroutines/Flow · Firebase Auth + Firestore (no FCM sender, no Functions) · Android Keystore (AES-256-GCM `KeystoreBox`) for local secrets · R8 on release.
 Package: `com.imrat.focuslock`. Modules: single `:app` module, packages `ui/ data/ lock/ service/ security/ util/`.
 
 ## Runtime pieces
 - **LockAccessibilityService** — detects foreground app/window changes; if a lock applies, launches `LockActivity` (full-screen, `singleInstance`, excluded from recents, shows over keyguard only after unlock). Also blocks sensitive Settings screens (SEC-2).
-- **CoreService (foreground, low-priority silent notification)** — holds Firestore snapshot listeners (own `sessions`, `links`, own `schedules`, and for Observers their Users' status), schedules alarms, restores state at boot.
+- **CoreService (foreground, low-priority silent notification)** — holds Firestore snapshot listeners (own `sessions`, own `links`, own `schedules`, link alerts, and for Observers their Users' links), schedules alarms, restores state at boot, runs a 30 s housekeeping tick and the 6-hourly password-pool top-up for Observers. On API < 34 it starts without a foreground-service type (taken from the manifest).
+- **ForegroundWatcher** — backup detector run by CoreService: polls UsageStats every 0.5 s only while a lock is active, the screen is on and Usage access is granted.
 - **SessionStore** — encrypted local cache of the active session(s): endElapsed (monotonic), mode, packages, pwHash/salt, cooldown state. Enforcement reads ONLY this, so it works offline.
-- **AlarmReceiver / BootReceiver** — exact alarms for schedule starts, pre-lock warnings, session end; re-arm after reboot.
-- **DeviceAdminReceiver** — blocks uninstall during lock.
-- **CallGuard** — TelephonyManager call state; dialer/InCallUI packages allowed only when call active.
+- **ScheduleAlarmReceiver / SessionEndReceiver / BootReceiver** — exact alarms for schedule starts, pre-lock warnings, session end; re-arm after reboot. Before Android 12 exact alarms need no permission (`canExact`).
+- **AdminReceiver (Device Admin)** — blocks uninstall during lock.
+- **CallGuard** — `AudioManager` mode (in-call / ringtone); dialer/InCallUI packages allowed only when a call is active (no phone-state permission).
 
 ## Remote lock path (no server)
 Observer writes a `sessions` doc under the User's uid → User's CoreService listener fires → SessionStore updated → enforcement starts (after 60 s warning for remote-instant). Unlock = Observer sets `status=ended`. Needs User online; password path works offline.
@@ -38,7 +39,7 @@ Generate 6 digits with `SecureRandom` on Observer phone; salt 16B; PBKDF2-HMAC-S
 On sync, store `serverOffset = serverTime − System.currentTimeMillis()` and `anchorElapsed = SystemClock.elapsedRealtime()`. Remaining = endAt − (serverNow derived from elapsedRealtime). Detect clock/timezone broadcast changes and re-derive from monotonic clock. Across reboot (elapsed resets): re-sync from server if online, else fall back to wall clock plus guard: never allow end earlier than last known remaining.
 
 ## Free-tier budget
-Listeners only on own docs; Observer listens to links where observerUid==me plus each User's active session. Timers are local. Apps list uploaded only when it actually changes (hash compare).
+Listeners only on own docs; Observer listens to links where observerUid==me plus each User's active session. Timers are local. Apps list uploaded only when it actually changes (hash compare). Caps enforced by rules: 500 apps per list/schedule/session, 1500 in the uploaded installed-app list, 40 password-pool entries per schedule.
 
 ## Build & release
-CLI Gradle (`./gradlew assembleDebug`), install with `adb`. Release: self-signed keystore kept OUT of repo; publish APK via GitHub Releases.
+CLI Gradle (`./gradlew assembleDebug`), install with `adb`. Release: self-signed keystore kept OUT of repo (`keystore.properties`, git-ignored); its SHA-1 must be added to the Firebase Android app; publish APK via GitHub Releases. Debug and release builds have different ANDROID_IDs (AUTH-2).

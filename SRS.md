@@ -1,4 +1,4 @@
-# Focus Lock — Software Requirements Specification (v2.0)
+# Focus Lock — Software Requirements Specification (v2.1, final audit T20)
 
 Platform: Android only (minSdk 26) · Backend: Firebase Spark (free) · Auth: Google Sign-In · Distribution: sideloaded APK (GitHub Releases)
 Repo: git@github.com:imrat-67/Focus-Lock.git · Language: English UI (strings in resources, Bangla-ready)
@@ -17,16 +17,16 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 
 ### AUTH
 - AUTH-1 Google Sign-In (Firebase Auth) is the only login.
-- AUTH-2 One account manages exactly one phone ("My Device"). Signing in on a second phone is rejected with a clear message.
-- AUTH-3 Sign-out and account deletion are disabled while a lock is active on this phone.
+- AUTH-2 One account manages exactly one phone ("My Device"). Signing in on a second phone is rejected with a clear message. The phone is identified by ANDROID_ID, which Android scopes per app-signing key: a debug build and a release build count as different phones, so an account first used with a debug build must be reset (delete its `users/{uid}` document in the Firebase console) before it can sign in with the release APK.
+- AUTH-3 Sign-out is disabled while a lock is active on this phone, and while an Observer is linked (signing out would end every remote lock; unlink first). The Home screen re-checks the link right before signing out. v1 has no account deletion.
 
 ### LINK (Observer relationship)
 - LINK-1 "Add Device" offers **My Device** or **Remote Device**. Both lead to the same lock/schedule/app-list screens.
 - LINK-2 Remote Device: Observer enters the target's email or friend code. A request is created; the target sees it in-app (and as a local notification). Nothing can be locked until the target **accepts**.
-- LINK-3 Lookup never reveals whether an email has an account (always "request sent if the account exists").
+- LINK-3 The app never tells the user whether an email has an account (always "request sent if the account exists"). Limit: a modified client can still probe the get-only `lookup` documents, because the free tier has no server code to hide that (accepted, see SEC-6).
 - LINK-4 A User has at most one Observer; an Observer can have many Users. A request to a User who already has an Observer is refused.
 - LINK-5 Connection is permanent until removed. Two accounts may observe each other.
-- LINK-6 Removal: the User sends a removal request; it completes only when the Observer accepts. If the Observer does not respond within 7 days it completes automatically. It also completes if the Observer deletes their account.
+- LINK-6 Removal: the User sends a removal request; it completes only when the Observer accepts. If the Observer does not respond within 7 days it completes automatically.
 - LINK-7 Removal never takes effect while a lock is active; it completes after the lock ends.
 
 ### LOCK
@@ -39,6 +39,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - LOCK-7 Active sessions survive reboot and app/process death (restored from encrypted local cache at boot).
 - LOCK-8 Tamper-resistant time: end time is computed from server time offset + monotonic clock; changing the device clock must not shorten a lock.
 - LOCK-9 Normal system notifications are never blocked or hidden by the lock.
+- LOCK-10 Backup detector: while a lock is active and the screen is on, the foreground app is also polled every 0.5 s through Usage access, in case a phone drops accessibility events. It does nothing without Usage access, and sleeps when no lock is active or the screen is off.
 
 ### SCH (Scheduling)
 - SCH-1 Schedules can be one-time or repeating (days of week + start/end time); several allowed. A one-time schedule's date is chosen from a calendar (today or later).
@@ -47,7 +48,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - SCH-4 Observer can cancel an upcoming or running instant/scheduled session at any time (see UNL-1).
 
 ### FMT (App lists)
-- FMT-1 An App list = name + list of apps. No hard count limit (Firestore doc-size bound only).
+- FMT-1 An App list = name + list of apps, up to 500 apps per list (Firestore rules cap; the uploaded installed-app list is capped at 1500).
 - FMT-2 Both User and Observer can create/edit/delete App lists for that User's phone. Using an App list for a lock is one tap.
 - FMT-3 The User's phone uploads its launchable app list (name + package only) so the Observer can choose apps. Readable only by that User and their Observer. Refreshed when the app opens and when apps are installed/removed.
 
@@ -74,7 +75,7 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 - SEC-3 Firestore Security Rules enforce all permissions server-side (see ARCHITECTURE.md); no client is trusted.
 - SEC-4 No secrets or keys in the repo; `google-services.json` and keystores are git-ignored.
 - SEC-5 Local secrets (session cache, Observer's plaintext passwords) live in Android Keystore–backed encrypted storage.
-- SEC-6 Threat model: resists ordinary bypass (force-stop, uninstall, clock change, reboot, app switching, going offline). Cannot resist Safe Mode, ADB/PC tools, root, or factory reset — no normal app can. A determined offline brute-force of a 6-digit hash is possible for a technical user; PBKDF2 with high iterations makes it slow, not impossible.
+- SEC-6 Threat model: resists ordinary bypass (force-stop, uninstall, clock change, reboot, app switching, going offline). Cannot resist Safe Mode, ADB/PC tools, root, or factory reset — no normal app can. Rules that the Firestore rules cannot express (LINK-7 "no removal during a lock", AUTH-2 device check, password attempt counters) are enforced by the app only, so a modified APK can bypass them. A determined offline brute-force of a 6-digit hash is possible for a technical user; PBKDF2 with high iterations makes it slow, not impossible.
 
 ### UI
 - UI-1 Screens: Sign-in · Home (devices + requests) · Add Device · Device detail (lock now, schedules, app lists) · Lock screen · Permissions checklist.
@@ -84,11 +85,11 @@ Helps a student stay focused by locking their phone (whole phone or chosen apps)
 ## 4. Non-functional
 - NFR-1 Stays inside Firebase Spark limits (target: < 5k reads / 2k writes per active day for 10 users). Timers tick locally; listeners only on own documents.
 - NFR-2 No Cloud Functions, no paid services, no card needed.
-- NFR-3 Release APK < 15 MB (R8 on). Low battery impact: no polling, event-driven listeners.
+- NFR-3 Release APK < 15 MB (R8 on). Low battery impact: event-driven Firestore listeners and exact alarms; the only polling is LOCK-10 (during a lock, screen on) plus a 30 s local housekeeping tick and a ~10 min server-time sync in the foreground service. UI tickers run only while the app is on screen. The user is asked to exempt the app from battery optimization (UI-2).
 - NFR-4 Must work on Android 8.0+ (API 26+); verify on the user's real phone; account for OEM background killers.
 
 ## 5. Out of scope (v1)
 Quick-lock widget, statistics/reports/attempt history, iOS, premium, ads, Strict Mode, battery-saver mode, Play Store release, Cloud Functions.
 
 ## 6. Open items
-Test-phone model/Android version (needed for T05+), Firebase project creation (user does console steps; see STATUS T03).
+Release SHA-1 must be registered in the Firebase Android app before the release APK can sign in with Google (see README). Test phone: vivo V2434, Android 16 (older Android versions 8–15 are expected to work but are untested on real hardware).
