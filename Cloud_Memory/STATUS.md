@@ -24,4 +24,5 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-none (T16 finished, waiting for user device test)
+Task: T17 user feedback batch 2. TODO: [ ] 1 a11y double-toggle: project or phone? [ ] 2 Apps-lock: search field height = saved dropdown height; label "Choose from saved app list" [ ] 3 running-lock countdown must tick every second (RunningAppLocks) [ ] 4 App list screen: no "no list" flash before load [ ] 5 Schedule row: align Delete/Unlock buttons [ ] 6 Recents still shows ~1s before lock cover [ ] 7 final build/test/install/push
+Files: ui/LockNow.kt, ui/Home*, ui/Schedules*, ui/Formats*, service/LockAccessibilityService.kt, res/values/strings.xml

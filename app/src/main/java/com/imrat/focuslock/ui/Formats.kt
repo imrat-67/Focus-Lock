@@ -99,7 +99,8 @@ fun AppPicker(apps: List<AppEntry>, selected: Set<String>, onToggle: (String) ->
     Column(modifier) {
         OutlinedTextField(
             value = query, onValueChange = { query = it }, singleLine = true, shape = MaterialTheme.shapes.medium,
-            label = { Text(stringResource(R.string.format_search)) }, modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(stringResource(R.string.format_search)) }, textStyle = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
         )
         Text(stringResource(R.string.format_selected, selected.size), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
         LazyColumn(Modifier.weight(1f)) {
@@ -121,7 +122,8 @@ fun AppPicker(apps: List<AppEntry>, selected: Set<String>, onToggle: (String) ->
 /** Formats of [targetUid]'s phone; the User or their Observer can edit (FMT-2). [apps] is the choosable app list. */
 @Composable
 fun FormatsScreen(targetUid: String, myUid: String, apps: List<AppEntry>, repo: FormatRepository, onBack: () -> Unit) {
-    val formats by remember(targetUid) { repo.observe(targetUid) }.collectAsStateWithLifecycle(emptyList())
+    val loaded by remember(targetUid) { repo.observe(targetUid) }.collectAsStateWithLifecycle<List<Format>?>(null)
+    val formats = loaded.orEmpty()
     var editing by remember { mutableStateOf<Format?>(null) }
     var creating by remember { mutableStateOf(false) }
     if (creating || editing != null) {
@@ -134,7 +136,7 @@ fun FormatsScreen(targetUid: String, myUid: String, apps: List<AppEntry>, repo: 
     }
     val scope = rememberCoroutineScope()
     AppScreen(stringResource(R.string.formats_title), onBack, scroll = false) {
-        if (formats.isEmpty()) Subtle(stringResource(R.string.formats_empty), Modifier.padding(top = 8.dp))
+        if (loaded != null && formats.isEmpty()) Subtle(stringResource(R.string.formats_empty), Modifier.padding(top = 8.dp))
         LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(formats, key = { it.id }) { f ->
                 FLCard {

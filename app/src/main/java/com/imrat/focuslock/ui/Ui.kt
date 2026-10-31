@@ -176,7 +176,7 @@ fun WheelPicker(range: IntRange, value: Int, onChange: (Int) -> Unit, modifier: 
 fun SavedListPicker(lists: List<com.imrat.focuslock.data.Format>, onPick: (Set<String>) -> Unit, modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     Box(modifier.fillMaxWidth()) {
-        androidx.compose.material3.OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp)) {
+        androidx.compose.material3.OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth().height(48.dp), shape = MaterialTheme.shapes.medium) {
             Text(stringResource(R.string.choose_saved), Modifier.weight(1f))
             Icon(Icons.Filled.ArrowDropDown, null)
         }

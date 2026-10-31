@@ -57,7 +57,8 @@ private fun hhmm(min: Int) = "%02d:%02d".format(min / 60, min % 60)
 /** Schedules list (SCH-1). Observer-created ones are read-only here (SCH-2). */
 @Composable
 fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository, formats: FormatRepository, myUid: String = uid, topUp: com.imrat.focuslock.lock.SchedulePoolTopUp? = null, onBack: () -> Unit) {
-    val list by remember(uid) { repo.observe(uid) }.collectAsStateWithLifecycle(emptyList())
+    val loaded by remember(uid) { repo.observe(uid) }.collectAsStateWithLifecycle<List<Schedule>?>(null)
+    val list = loaded.orEmpty()
     var creating by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     if (creating) {
@@ -67,12 +68,12 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
         return
     }
     AppScreen(stringResource(R.string.sched_title), onBack, scroll = false) {
-        if (list.isEmpty()) Subtle(stringResource(R.string.sched_empty), Modifier.padding(top = 8.dp))
+        if (loaded != null && list.isEmpty()) Subtle(stringResource(R.string.sched_empty), Modifier.padding(top = 8.dp))
         LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(list, key = { it.id }) { s ->
                 val mine = s.createdBy == myUid
                 FLCard {
-                    Row(Modifier.padding(start = 16.dp, top = 10.dp, bottom = 10.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.padding(start = 16.dp, top = 6.dp, bottom = 6.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             val whenText = s.oneTimeDate ?: s.days.sorted().joinToString(" ") { DayOfWeek.of(it).getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
                             Text("$whenText  ${hhmm(s.startMin)}–${hhmm(s.endMin)}", style = MaterialTheme.typography.titleMedium)
@@ -80,10 +81,12 @@ fun SchedulesScreen(uid: String, apps: List<AppEntry>, repo: ScheduleRepository,
                             Subtle(modeText + if (mine) "" else " · " + stringResource(R.string.sched_by_observer))
                         }
                         if (mine) {
-                            Switch(s.enabled, { on -> scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } } })
                             TextButton(onClick = { scope.launch { runCatching { repo.delete(uid, s.id) } } }) {
                                 Text(stringResource(R.string.format_delete), color = MaterialTheme.colorScheme.error)
                             }
+                            Switch(s.enabled, modifier = Modifier.padding(start = 4.dp, end = 8.dp), onCheckedChange = { on ->
+                                scope.launch { runCatching { val u = s.copy(enabled = on); repo.update(uid, u); if (on) topUp?.topUp(uid, myUid, u) } }
+                            })
                         }
                     }
                 }

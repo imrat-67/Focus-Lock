@@ -258,11 +258,15 @@ private fun RunningAppLocks() {
             delay(1_000)
         }
     }
+    // Ticks every second so the countdown recomposes even when the session list itself is unchanged.
+    val nowEl by androidx.compose.runtime.produceState(android.os.SystemClock.elapsedRealtime()) {
+        while (true) { value = android.os.SystemClock.elapsedRealtime(); delay(1_000) }
+    }
     if (running.isEmpty()) return
     val clock = remember { java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT) }
     SectionLabel(stringResource(R.string.h_running_locks))
     running.forEach { s ->
-        val left = ((s.endElapsedMs - android.os.SystemClock.elapsedRealtime()).coerceAtLeast(0) + 999) / 1000
+        val left = ((s.endElapsedMs - nowEl).coerceAtLeast(0) + 999) / 1000
         val ends = clock.format(java.util.Date(System.currentTimeMillis() + left * 1000))
         FLCard(Modifier.padding(bottom = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
