@@ -25,4 +25,5 @@ Legend: [ ] todo · [~] in progress · [x] done. Finished tasks keep ONE line on
 - [~] T14 (a-g done: T14g = request notif+red dot, 'App list' rename, Apps lock never covers FL, lock-type pill, 1-min default, calendar date) REDESIGN (see REDESIGN.md): new UI/theme, new flow (Home/Add device/My vs Remote), lock-screen fixes, hour+minute picker, Home/Recents block, remove emergency buttons, two-device testing. Waiting for user answers to Claude's clarifying questions.
 
 ## CHECKPOINT (live; overwrite before each step)
-none (T17 finished, waiting for user device test)
+Task: T18 feedback 3. TODO: [ ] 1 App lists caption on ThisDevice [ ] 2 sign-out blocked while an Observer link exists (+ audit other bypass tricks, report) [ ] 3 notifications: small icon/logo, decline->notify requester [ ] 4 LockNow/Schedule editor: app selection into dialog so wheels never shift [ ] 5 Schedule row: time | switch | Delete far right, bigger gap [ ] 6 build/test/install/screenshot/push
+Files: ui/HomeScreens.kt, ui/LockNow.kt, ui/Schedules.kt, ui/Ui.kt, ui/AuthViewModel.kt, ui/Screens.kt, service/*Alerts*, res/drawable

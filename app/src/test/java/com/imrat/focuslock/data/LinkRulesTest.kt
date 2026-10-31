@@ -30,4 +30,12 @@ class LinkRulesTest {
         assertFalse(LinkRules.shouldAutoComplete(l, 8 * day, true))
         assertTrue(LinkRules.shouldAutoComplete(l, 8 * day, false))
     }
+
+    @Test fun signOutBlockedWithObserverOrLock() {
+        assertTrue(LinkRules.canSignOut(null, false))
+        assertTrue(LinkRules.canSignOut(link(LinkStatus.PENDING), false))
+        assertFalse(LinkRules.canSignOut(link(LinkStatus.ACTIVE), false))
+        assertFalse(LinkRules.canSignOut(link(LinkStatus.REMOVAL_REQUESTED), false))
+        assertFalse(LinkRules.canSignOut(null, true))
+    }
 }

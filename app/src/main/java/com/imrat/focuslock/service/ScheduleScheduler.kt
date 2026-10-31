@@ -79,7 +79,7 @@ class ScheduleScheduler(ctx: Context) {
         nm.createNotificationChannel(NotificationChannel(WARN_CHANNEL, app.getString(R.string.warn_channel), NotificationManager.IMPORTANCE_HIGH))
         nm.notify(
             WARN_ID,
-            NotificationCompat.Builder(app, WARN_CHANNEL).setSmallIcon(android.R.drawable.ic_lock_lock)
+            NotificationCompat.Builder(app, WARN_CHANNEL).setSmallIcon(R.drawable.ic_stat_logo)
                 .setContentTitle(app.getString(R.string.warn_title)).setContentText(app.getString(R.string.warn_text))
                 .setAutoCancel(true).build(),
         )

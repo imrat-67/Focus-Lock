@@ -12,6 +12,7 @@
     <string name="home_placeholder">Locking features arrive in the next updates.</string>
     <string name="sign_out">Sign out</string>
     <string name="sign_out_locked">Sign-out is off while a lock is active.</string>
+    <string name="sign_out_observer">Sign-out is off while an Observer is linked. Unlink them first.</string>
     <string name="other_device_title">Another phone is linked</string>
     <string name="other_device_body">This account already manages a different phone. Sign out and use a different Google account here.</string>
     <string name="accessibility_description">Detects the open app and guards Settings screens while a lock is active. Nothing is stored or sent.</string>
@@ -123,6 +124,10 @@
     <string name="alert_channel">Requests</string>
     <string name="alert_request_title">New Observer request</string>
     <string name="alert_request_body">You have a new Observer request. Open Focus Lock to answer.</string>
+    <string name="alert_accepted_title">Request accepted</string>
+    <string name="alert_accepted_body">Your Observer request was accepted.</string>
+    <string name="alert_declined_title">Request declined</string>
+    <string name="alert_declined_body">Your Observer request was declined.</string>
     <string name="alert_removal_title">Unlink request</string>
     <string name="alert_removal_body">A device you observe requested to unlink. Open Focus Lock to review.</string>
     <string name="links_release_locked">A lock is running on their phone. You can unlink after it ends.</string>

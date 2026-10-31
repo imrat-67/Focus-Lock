@@ -179,9 +179,10 @@ class CoreService : Service() {
                     kotlinx.coroutines.flow.combine(repo.observe(uid), repo.observeUsersOf(uid)) { mine, people -> mine to people }
                         .collect { (mine, people) ->
                             val seen = prefs.getStringSet("seen", emptySet()).orEmpty()
-                            val r = com.imrat.focuslock.data.LinkAlerts.plan(mine, people, seen)
+                            val prev = prefs.getStringSet("pending", emptySet()).orEmpty()
+                            val r = com.imrat.focuslock.data.LinkAlerts.plan(mine, people, seen, prev)
                             r.fresh.forEach { notifyAlert(it) }
-                            prefs.edit().putStringSet("seen", r.currentKeys).apply()
+                            prefs.edit().putStringSet("seen", r.currentKeys).putStringSet("pending", r.pendingNow).apply()
                         }
                 }.onFailure { Log.w("CoreService", "link alerts: ${it.message}") }
             }
@@ -193,12 +194,18 @@ class CoreService : Service() {
         if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) return
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel("alerts_v2", getString(R.string.alert_channel), NotificationManager.IMPORTANCE_HIGH))
-        val request = a.kind == com.imrat.focuslock.data.LinkAlerts.Kind.NEW_REQUEST
+        val kind = a.kind
+        val (title, body) = when (kind) {
+            com.imrat.focuslock.data.LinkAlerts.Kind.NEW_REQUEST -> R.string.alert_request_title to R.string.alert_request_body
+            com.imrat.focuslock.data.LinkAlerts.Kind.REMOVAL_ASKED -> R.string.alert_removal_title to R.string.alert_removal_body
+            com.imrat.focuslock.data.LinkAlerts.Kind.REQUEST_ACCEPTED -> R.string.alert_accepted_title to R.string.alert_accepted_body
+            com.imrat.focuslock.data.LinkAlerts.Kind.REQUEST_DECLINED -> R.string.alert_declined_title to R.string.alert_declined_body
+        }
         val open = android.app.PendingIntent.getActivity(this, 1, Intent(this, MainActivity::class.java), android.app.PendingIntent.FLAG_IMMUTABLE)
         val n = NotificationCompat.Builder(this, "alerts_v2")
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
-            .setContentTitle(getString(if (request) R.string.alert_request_title else R.string.alert_removal_title))
-            .setContentText(getString(if (request) R.string.alert_request_body else R.string.alert_removal_body))
+            .setSmallIcon(R.drawable.ic_stat_logo)
+            .setContentTitle(getString(title))
+            .setContentText(getString(body))
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
@@ -220,7 +227,7 @@ class CoreService : Service() {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel("alerts_v2", getString(R.string.alert_channel), NotificationManager.IMPORTANCE_HIGH))
         val n = NotificationCompat.Builder(this, "alerts_v2")
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setSmallIcon(R.drawable.ic_stat_logo)
             .setContentTitle(getString(R.string.toast_apps_lock_on))
             .setAutoCancel(true)
             .build()
@@ -231,7 +238,7 @@ class CoreService : Service() {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel("warn", getString(R.string.warn_channel), NotificationManager.IMPORTANCE_HIGH))
         val n = NotificationCompat.Builder(this, "warn")
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setSmallIcon(R.drawable.ic_stat_logo)
             .setContentTitle(getString(R.string.rwarn_title))
             .setContentText(getString(R.string.rwarn_body))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -251,7 +258,7 @@ class CoreService : Service() {
             android.app.PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_lock)
+            .setSmallIcon(R.drawable.ic_stat_logo)
             .setContentTitle(getString(R.string.service_notification))
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setOngoing(true)

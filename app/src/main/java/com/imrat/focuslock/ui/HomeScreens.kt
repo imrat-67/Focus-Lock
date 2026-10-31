@@ -161,8 +161,9 @@ private fun ProfileSheet(
             SecondaryButton(stringResource(R.string.perms_open, missingPerms), onPerms)
         }
         Spacer(Modifier.height(16.dp))
-        SecondaryButton(stringResource(R.string.sign_out), onSignOut, enabled = !lockActive, danger = true)
-        if (lockActive) Subtle(stringResource(R.string.sign_out_locked), Modifier.padding(top = 6.dp), TextAlign.Center)
+        val canOut = com.imrat.focuslock.data.LinkRules.canSignOut(link, lockActive)
+        SecondaryButton(stringResource(R.string.sign_out), onSignOut, enabled = canOut, danger = true)
+        if (!canOut) Subtle(stringResource(if (lockActive) R.string.sign_out_locked else R.string.sign_out_observer), Modifier.padding(top = 6.dp), TextAlign.Center)
     }
 }
 

@@ -7,6 +7,10 @@ object LinkRules {
     fun canRequestRemoval(link: Link?, lockActive: Boolean): Boolean =
         link != null && link.status == LinkStatus.ACTIVE && !lockActive
 
+    /** AUTH-3: sign-out is blocked during a lock and while an Observer is linked (it would end every remote lock). Unlink first. */
+    fun canSignOut(link: Link?, lockActive: Boolean): Boolean =
+        !lockActive && (link == null || link.status == LinkStatus.PENDING)
+
     /** LINK-6: days left before a silent removal request completes by itself. */
     fun daysUntilAutoRemoval(link: Link, nowMs: Long): Long {
         val asked = link.removalRequestedAtMs ?: return 0

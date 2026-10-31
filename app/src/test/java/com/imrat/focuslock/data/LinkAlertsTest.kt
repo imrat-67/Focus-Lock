@@ -25,4 +25,16 @@ class LinkAlertsTest {
         assertTrue(cleared.currentKeys.isEmpty())
         assertEquals(1, LinkAlerts.plan(l("me", "o", LinkStatus.PENDING), emptyList(), cleared.currentKeys).fresh.size)
     }
+
+    @Test fun vanishedPendingRequestReadsAsDeclined() {
+        val r = LinkAlerts.plan(null, emptyList(), emptySet(), setOf("u1"))
+        assertEquals(listOf(LinkAlerts.Kind.REQUEST_DECLINED), r.fresh.map { it.kind })
+    }
+
+    @Test fun pendingRequestTurnedActiveReadsAsAccepted() {
+        val r = LinkAlerts.plan(null, listOf(l("u1", "me", LinkStatus.ACTIVE)), emptySet(), setOf("u1"))
+        assertEquals(listOf(LinkAlerts.Kind.REQUEST_ACCEPTED), r.fresh.map { it.kind })
+        assertTrue(LinkAlerts.plan(null, listOf(l("u1", "me", LinkStatus.PENDING)), emptySet(), setOf("u1")).fresh.isEmpty())
+        assertEquals(setOf("u1"), LinkAlerts.plan(null, listOf(l("u1", "me", LinkStatus.PENDING)), emptySet()).pendingNow)
+    }
 }

@@ -20,6 +20,7 @@ import com.imrat.focuslock.data.LockMode
 import com.imrat.focuslock.ui.LockState
 import com.imrat.focuslock.lock.SessionEngine
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -128,7 +129,13 @@ class MainActivity : ComponentActivity() {
                                     s.profile, Perms.missing(this@MainActivity).size, lockStateNow, container, store,
                                     { route = "add" }, { route = "this" }, { u, n -> remoteUid = u; remoteName = n },
                                     { showPerms = true },
-                                ) { vm.signOut(this@MainActivity) }
+                                ) {
+                                    // AUTH-3: re-check the Observer link right now (blocked when unknown), so the UI state cannot be raced.
+                                    lifecycleScope.launch {
+                                        val got = kotlinx.coroutines.withTimeoutOrNull(3_000) { listOf(container.links.observe(uid).first()) }
+                                        if (got != null && com.imrat.focuslock.data.LinkRules.canSignOut(got[0], false)) vm.signOut(this@MainActivity)
+                                    }
+                                }
                             }
                         }
                         AuthUiState.OtherDevice -> OtherDeviceScreen { vm.signOut(this) }
